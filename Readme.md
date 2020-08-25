@@ -139,14 +139,4 @@ Directory layout:
         |   └── drawer.py
         └── Readme.md
         
-## Troubleshooting
-
-    
-        echo "source /home/melodi/baxter_ws/devel/setup.bash" >> ~/.bashrc
-        echo "export COPPELIASIM_ROOT_DIR=/home/melodi/CoppeliaSim_Edu_V4_0_0_Ubuntu18_04 >> ~/.bashrc
-        catkin_make --cmake-args -DCMAKE_BUILD_TYPE=Release -DLIBPLUGIN_DIR=$COPPELIASIM_ROOT_DIR/programming/libPlugin
-
-
-Resources
-1. 
 
