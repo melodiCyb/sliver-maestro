@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
 import torch
 import torch.nn as nn
 import torch.functional as F
@@ -268,16 +266,16 @@ if __name__ == '__main__':
     
     if phase == 'train':
         optimizer = optim.Adam(model.parameters(), lr=learning_rate, betas=(beta1, 0.999))
-        #if USE_CUDA:
-        #    model.cuda()
+        if USE_CUDA:
+            model.cuda()
 
         model.start(epoch_num=epoch_num, phase='train')
     
     torch.set_default_tensor_type('torch.FloatTensor')
     model = DRAW(T, A, B, z_size, N, dec_size, enc_size, path)
     
-    #if USE_CUDA:
-    #    model.cuda()
+    if USE_CUDA:
+        model.cuda()
     
     state_dict = torch.load('save/weights_final.tar', map_location=torch.device('cpu'))
     model.load_state_dict(state_dict)

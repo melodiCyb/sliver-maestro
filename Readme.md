@@ -3,10 +3,10 @@
 [Hackathon project for Global PyTorch Summer Hackathon 2020](https://pytorch2020.devpost.com/)
 
 ### Inspiration
-A human learns how to draw with simple shapes and sketching.  At first, we just try to copy it by following the image pixel by pixel and by the age of seven, we don’t need a demonstration or a hard-coded drawing steps to achieve this. However, for robots it’s not the case and we would like to democratize art by enabling self-learning for robots.
+A human learns how to draw with simple shapes and sketching.  At first, we just try to copy it by following the image pixel by pixel and we don’t need a demonstration or a hard-coded drawing steps to achieve this. However, for robots it’s not the case and we would like to democratize art by enabling self-learning for robots.
 
 ### What it does
-Bankster is a simulated artistic robot and its expertise is doodling! Bankster generates the required stroke movements by just one look at an image.  
+Sliver Maestro is a simulated artistic robot and its expertise is doodling! Sliver Maestro generates the required stroke movements by just one look at an image.  
 
 ## Model
 
@@ -29,12 +29,12 @@ Recommended svg converter: [Link](https://image.online-convert.com/convert-to-sv
 
 * After diffs of Draw outputs
 
-![drawpostprocess](https://github.com/melodiCyb/baxter-drawing/blob/master/bankster/gifs/postprocessed_draw.gif)
+![drawpostprocess](https://github.com/melodiCyb/baxter-drawing/blob/master/sliver-maestro/gifs/postprocessed_draw.gif)
 
 ## Simulation 
 * Final simulation
 
-![bankstergif](https://github.com/melodiCyb/baxter-drawing/blob/master/bankster/gifs/bankster.gif)
+![bankstergif](https://github.com/melodiCyb/baxter-drawing/blob/master/sliver-maestro/gifs/bankster.gif)
 
 
 * Raw data sample simulation
@@ -44,24 +44,27 @@ Recommended svg converter: [Link](https://image.online-convert.com/convert-to-sv
 
 
 ## Requirements
+* Python >= 3.5
+
+Simulation
 * Ubuntu 18.04
 * CoppeliaSim 4_0_0 
 * Remote API
 * vrep_pkgs
-* Python >= 3.5
+
 
 
 ## How to run
 
 1. Clone the repo and cd into it:
         
-       git clone https://github.com/melodiCyb/bankster.git
-       cd bankster
+       git clone https://github.com/melodiCyb/sliver-maestro.git
+       cd sliver-maestro
       
 2. Setup the environment Install the requirements:
 
-       conda create --name bankster 
-       conda activate bankster
+       conda create --name sliver-maestro 
+       conda activate sliver-maestro
        pip install -r requirements.txt
 
 3. Start another terminal and run:
@@ -70,7 +73,7 @@ Recommended svg converter: [Link](https://image.online-convert.com/convert-to-sv
        
 4. After the simulation UI starts upload bankster scene and run:
  
-       cd bankster
+       cd sliver-maestro
        catkin_make
        source devel/setup.bash
        cd src
@@ -95,7 +98,7 @@ Recommended svg converter: [Link](https://image.online-convert.com/convert-to-sv
         
         python pgame_runner.py
         
-* You can see the created output images in the directory ~/bankster/src/data/output/images
+* You can see the created output images in the directory ~/sliver-maestro/src/data/output/images
 
 * You can generate gif using imagemagick:
 
@@ -124,7 +127,7 @@ Directory layout:
         |                └── final_motion.csv
         |                └── .
         |   ├── simulation
-        |       └── bankster.ttt
+        |       └── sliver-maestro.ttt
         |    ├── utils
         |       └── dataset.py
         |       └── im_utils.py
@@ -136,14 +139,4 @@ Directory layout:
         |   └── drawer.py
         └── Readme.md
         
-## Troubleshooting
-
-    
-        echo "source /home/melodi/baxter_ws/devel/setup.bash" >> ~/.bashrc
-        echo "export COPPELIASIM_ROOT_DIR=/home/melodi/CoppeliaSim_Edu_V4_0_0_Ubuntu18_04 >> ~/.bashrc
-        catkin_make --cmake-args -DCMAKE_BUILD_TYPE=Release -DLIBPLUGIN_DIR=$COPPELIASIM_ROOT_DIR/programming/libPlugin
-
-
-Resources
-1. 
 
