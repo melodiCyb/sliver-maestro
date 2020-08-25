@@ -83,6 +83,7 @@ Simulation
        python draw_model.py 
        
 6. Use a pre-trained model (Optional): pre-trained models are located in notebooks/model folder with options:
+
         * cat_draw.pth
         * draw.pth (moon_draw.pth)
         
