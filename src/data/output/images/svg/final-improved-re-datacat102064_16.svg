@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   id="svg8"
+   width="121.68pt"
+   viewBox="0 0 121.68 120.96"
+   version="1.1"
+   height="120.96pt">
+  <metadata
+     id="metadata12">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs4">
+    <style
+       id="style2"
+       type="text/css">
+*{stroke-linecap:butt;stroke-linejoin:round;}
+  </style>
+  </defs>
+  <g
+     id="figure_1">
+    <image
+       y="-0"
+       xlink:href="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAKkAAACoCAYAAACbic6KAAAABHNCSVQICAgIfAhkiAAAAs5JREFUeJzt3cFOg0AUQNFi/P9fxn1TtBigd4ZzlsZFNTcvfR0Ky7qu6wPCvj79AuAvIiVPpOSJlDyRkidS8kRKnkjJEyl5IiXv+9Mv4O6WZXn7d+96gm2SkidS8kRKnkjJszg92bPIXO2I1zbi8mWSkidS8kRKnkjJEyl502/3Z27rhU1579834jGsSUqeSMkTKXkiJU+k5C2z3Atq9i3+bOWt3yQlT6TkiZQ8kZInUvKmP7vnPa829q2N/9XPz9z4TVLyREqeSMkTKXnTLE5bb9zLX1Guq/xPTVLyREqeSMkTKXkiJU+k5ImUPJGSJ1LyREreNMeiWypHe7Pb+n8ecZ2pSUqeSMkTKXkiJU+k5E2/3W+x9Y/DJCVPpOSJlDyRkidS8m673W85655G5Tsp77XnvlFHMEnJEyl5IiVPpOSJlDzbfdCZV7mPyCQlT6TkiZQ8kZI3zeJ01LHcXZeTPTwiB56IlDyRkidS8kRK3pDbva8d34tJSp5IyRMpeSIlb8jF6YhvK159/DnicWtlQTVJyRMpeSIlT6TkiZS8Ibf7V0bcnnmPSUqeSMkTKXkiJU+k5J223buf0f/NdFfoI5ik5ImUPJGSJ1LypjkW/YTCRcGfWFCvXtZMUvJESp5IyRMpeSIl7/Lt/qxttLBp/6bwYN1RmaTkiZQ8kZInUvIuX5wq1z9WXsdZ9i6o5QXMJCVPpOSJlDyRkidS8kRK3pBX5l/9lOCyvR8plT9q2mKSkidS8kRKnkjJEyl5IiVPpOSJlDyRkidS8tLHoiMe4VUccQV+5ajZJCVPpOSJlDyRkreskXfHI76h5xomKXkiJU+k5ImUPJGSl7nTM2wxSckTKXkiJU+k5ImUvPRFz87oeTxMUgYgUvJESp5IyRMpebd92BjjMEnJEyl5IiVPpOSJlDyRkidS8kRKnkjJEyl5IiVPpOSJlDyRkvcD95mCboTcyBIAAAAASUVORK5CYII="
+       x="0"
+       width="121.68"
+       transform="scale(1 -1)translate(0 -120.96)"
+       id="imaged16fadcf90"
+       height="120.96" />
+  </g>
+</svg>
