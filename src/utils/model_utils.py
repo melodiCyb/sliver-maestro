@@ -4,7 +4,6 @@ import torch
 from torch.autograd import Variable
 
 
-
 def align(x, y, start_dim=0):
     xd, yd = x.dim(), y.dim()
     if xd > yd: 
@@ -31,7 +30,7 @@ def matmul(X,Y):
         results.append(result.unsqueeze(0))
     return torch.cat(results)
 
-def xrecons_grid(batch_size,B,A, T, count=0, base_img_name='/Users/melodi/submission/baxter-drawing/bankster/src/data/output/images/count'):
+def xrecons_grid(batch_size, B, A, T, base_img_name, count=0):
     """
     plots canvas for single time step
     X is x_recons, (batch_size x img_size)
@@ -68,7 +67,7 @@ def xrecons_grid(batch_size,B,A, T, count=0, base_img_name='/Users/melodi/submis
 
 
 
-def save_example_image(output_file='/Users/melodi/submission/baxter-drawing/bankster/src/data/output/images/example.png'):
+def save_example_image(output_file):
     train_iter = iter(train_loader)
     data, _ = train_iter.next()
     img = data.cpu().numpy().reshape(batch_size, 28, 28)
