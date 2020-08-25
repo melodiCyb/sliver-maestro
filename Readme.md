@@ -93,7 +93,7 @@ Simulation
        
 7. Run robot simulation
 
-       python drawer.py --image test.png --vrep True
+       python drawer.py
        
 8. Run PyGame 
         
