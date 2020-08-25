@@ -29,12 +29,12 @@ Recommended svg converter: [Link](https://image.online-convert.com/convert-to-sv
 
 * After diffs of Draw outputs
 
-![drawpostprocess](https://github.com/melodiCyb/baxter-drawing/blob/master/sliver-maestro/gifs/postprocessed_draw.gif)
+![drawpostprocess](https://github.com/melodiCyb/sliver-maestro/blob/master/gifs/postprocessed_draw.gif)
 
 ## Simulation 
 * Final simulation
 
-![bankstergif](https://github.com/melodiCyb/baxter-drawing/blob/master/sliver-maestro/gifs/bankster.gif)
+![bankstergif](https://github.com/melodiCyb/sliver-maestro/blob/master/gifs/bankster.gif)
 
 
 * Raw data sample simulation
