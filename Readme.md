@@ -88,11 +88,11 @@ Simulation
         * draw.pth (moon_draw.pth)
         
        
-6. Generate drawings using samples
+6. Generate drawings using samples (Optional)
         
        python postprocess.py
        
-7. Run robot simulation
+7. Run robot simulation (Optional)
 
        python drawer.py
        
