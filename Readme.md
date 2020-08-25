@@ -82,9 +82,10 @@ Simulation
        
        python draw_model.py 
        
-6. Use a pre-trained model (Optional)
-
-       python test.py --pre-trained cat_model.pth
+6. Use a pre-trained model (Optional): pre-trained models are located in notebooks/model folder with options:
+        * cat_draw.pth
+        * draw.pth (moon_draw.pth)
+        
        
 6. Generate drawings using samples
         
@@ -99,11 +100,6 @@ Simulation
         python pgame_runner.py
         
 * You can see the created output images in the directory ~/sliver-maestro/src/data/output/images
-
-* You can generate gif using imagemagick:
-
-     
-      convert -delay 10 -loop 0 *.png draw.gif
 
 
 Directory layout:
