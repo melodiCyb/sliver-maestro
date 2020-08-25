@@ -31,7 +31,7 @@ def matmul(X,Y):
         results.append(result.unsqueeze(0))
     return torch.cat(results)
 
-def xrecons_grid(batch_size,B,A, T, count=0):
+def xrecons_grid(batch_size,B,A, T, count=0, base_img_name='/Users/melodi/submission/baxter-drawing/bankster/src/data/output/images/count'):
     """
     plots canvas for single time step
     X is x_recons, (batch_size x img_size)
@@ -58,9 +58,9 @@ def xrecons_grid(batch_size,B,A, T, count=0):
                 img[startr:endr, startc:endc]=X[t][i, j, :, :]
         img = img[150:180,120:150] # the one at the sixth row and the fifth column
         plt.matshow(img, cmap=plt.cm.gray)
-        #plt.show()
         plt.axis('off')
-        imgname = '/Users/melodi/submission/baxter-drawing/bankster/src/data/output/images/count_%d_%s_%d.png' % (count,'test', t)  # you can merge using imagemagick, i.e. convert -delay 10 -loop 0 *.png mnist.gif
+        
+        imgname = '%s_%d_%s_%d.png' % (base_img_name, count,'test', t)
         plt.savefig(imgname)
         print(imgname)
 
@@ -68,14 +68,14 @@ def xrecons_grid(batch_size,B,A, T, count=0):
 
 
 
-def save_example_image():
+def save_example_image(output_file='/Users/melodi/submission/baxter-drawing/bankster/src/data/output/images/example.png'):
     train_iter = iter(train_loader)
     data, _ = train_iter.next()
     img = data.cpu().numpy().reshape(batch_size, 28, 28)
     imgs = xrecons_grid(img, B, A)
     plt.matshow(imgs, cmap=plt.cm.gray)
     plt.axis('off')
-    plt.savefig('/Users/melodi/submission/baxter-drawing/bankster/src/data/output/images/example.png')
+    plt.savefig(output_file)
 
 
 def generate():

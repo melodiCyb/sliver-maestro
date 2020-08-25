@@ -14,21 +14,21 @@ class Dataset:
     def data(self):
         return self._data
 
-    def next_batch(self,batch_size,shuffle = True):
+    def next_batch(self,batch_size,shuffle = False):
         start = self._index_in_epoch
         if start == 0 and self._epochs_completed == 0:
-            idx = np.arange(0, self._num_examples)  # get all possible indexes
-            np.random.shuffle(idx)  # shuffle indexe
-            self._data = self.data[idx]  # get list of `num` random samples
+            idx = np.arange(0, self._num_examples) 
+            #np.random.shuffle(idx)  
+            self._data = self.data[idx]  
 
         # go to the next batch
         if start + batch_size > self._num_examples:
             self._epochs_completed += 1
             rest_num_examples = self._num_examples - start
             data_rest_part = self.data[start:self._num_examples]
-            idx0 = np.arange(0, self._num_examples)  # get all possible indexes
-            np.random.shuffle(idx0)  # shuffle indexes
-            self._data = self.data[idx0]  # get list of `num` random samples
+            idx0 = np.arange(0, self._num_examples) 
+            #np.random.shuffle(idx0)  # shuffle indexes
+            self._data = self.data[idx0]  
 
             start = 0
             self._index_in_epoch = batch_size - rest_num_examples #avoid the case where the #sample != integar times of batch_size
@@ -39,7 +39,7 @@ class Dataset:
             self._index_in_epoch += batch_size
             end = self._index_in_epoch
             return self._data[start:end]
-# TRAIN TEST SPLIT
+
 ##Place all the npy quickdraw files in mypath
 
 def split_data_multiple_files(mypath):
@@ -55,7 +55,8 @@ def split_data_multiple_files(mypath):
     y_test = []
     xtotal = []
     ytotal = []
-    slice_train = int(80000/len(txt_name_list))  ###Setting value to be 80000 for the final dataset
+    ###Setting value to be 80000 for the final dataset
+    slice_train = int(80000/len(txt_name_list))  
     i = 0
     seed = np.random.randint(1, 10e6)
 
@@ -64,7 +65,7 @@ def split_data_multiple_files(mypath):
         txt_path = mypath + txt_name
         xx = np.load(txt_path)
         try:
-            xx = xx.astype('float32') / 255.    ##scale images
+            xx = xx.astype('float32') / 255.    ##scale images to binary
         except AttributeError:
             pass
         try:
@@ -92,7 +93,7 @@ def split_data(mypath):
     xx = np.load(mypath)
     y = [0] * len(xx)   
     try:
-        xx = xx.astype('float32') / 255.    ##scale images
+        xx = xx.astype('float32') / 255. 
     except AttributeError:
         pass
    

@@ -12,7 +12,6 @@ config = ConfigParser()
 config.read('config.cfg')
 
 
-
 def get_coordinates(path, use_z=True, plot_fig = True):
     # use only X, Y 
     if use_z:
@@ -22,12 +21,10 @@ def get_coordinates(path, use_z=True, plot_fig = True):
     
     if plot_fig:
         plt.figure()
-        #plt.plot(coordinates[:,0], -coordinates[:,1])
         plt.plot(coordinates[:,0], coordinates[:,1])
         plt.show()
     
     coordinates[:,0] = (coordinates[:,0] - coordinates[0,0]) / 2.0
-    #coordinates[:,1] = -(coordinates[:,1] - coordinates[0,1]) / 2.0
     coordinates[:,1] = (coordinates[:,1] - coordinates[0,1]) / 2.0
     return coordinates
 
@@ -88,7 +85,7 @@ if __name__ == '__main__':
     # close all open connections
     vrep.simxFinish(-1)
     coordinates = get_coordinates(path = config['generate_motion']['final_motion'])
-    final_xy = [] #[-0.6019,0.2206]
+    final_xy = [] 
     vision_sensor = False
     object_name = 'feltPen_invisible'
 
