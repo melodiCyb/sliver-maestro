@@ -136,4 +136,5 @@ Directory layout:
         |   └── drawer.py
         └── Readme.md
         
-
+## Resources
+1. PyTorch implementation of Deep Recurrent Attentive Writer model was modified from [this repo](https://github.com/chenzhaomin123/draw_pytorch)
