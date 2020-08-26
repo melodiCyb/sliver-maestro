@@ -11,7 +11,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from configparser import ConfigParser
 from utils.model_utils import *
-from utils import *
+from utils.dataset import *
 import argparse
 import os 
 
@@ -243,7 +243,7 @@ if __name__ == '__main__':
         root_path = os.getcwd()
     phase = args.phase
     if not phase:
-        phase = 'test'
+        phase = 'train'
  
 
     path = os.path.join(root_path, config['DRAW']['path'])
@@ -270,16 +270,17 @@ if __name__ == '__main__':
             model.cuda()
 
         model.start(epoch_num=epoch_num, phase='train')
-    
-    torch.set_default_tensor_type('torch.FloatTensor')
-    model = DRAW(T, A, B, z_size, N, dec_size, enc_size, path)
-    
-    if USE_CUDA:
-        model.cuda()
-    
-    state_dict = torch.load('save/weights_final.tar', map_location=torch.device('cpu'))
-    model.load_state_dict(state_dict)
-    model.start(phase='test')
+        
+    if phase == 'test':
+        torch.set_default_tensor_type('torch.FloatTensor')
+        model = DRAW(T, A, B, batch_size, z_size, N, dec_size, enc_size, path)
+
+        if USE_CUDA:
+            model.cuda()
+
+        state_dict = torch.load('save/weights_final.tar', map_location=torch.device('cpu'))
+        model.load_state_dict(state_dict)
+        model.start(phase='test')
 
     
  
