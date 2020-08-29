@@ -105,7 +105,7 @@ def generate_motion(svg_to_csv_base_path, scaled_base_path, final_motion):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(prog='bankster')
+    parser = argparse.ArgumentParser(prog='sliver-maestro')
     parser.add_argument('-rp', '--rootpath')
     args = parser.parse_args()
     root_path = args.rootpath
