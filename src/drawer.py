@@ -1,4 +1,4 @@
-from .utils import vrep
+from utils import vrep, vrepConst
 import numpy as np
 import time
 import sys
@@ -54,7 +54,7 @@ def draw(clientID, coordinates, final_xy, object_name, use_z=True):
             res = vrep.simxSetObjectPosition(clientID, v0, vrep.sim_handle_parent, cmd_pos, vrep.simx_opmode_oneshot_wait)
 
             if res != 0:
-            vrep.simxFinish(clientID)
+                vrep.simxFinish(clientID)
                 print('Remote API function call returned with error code: ', res)
                 break
 

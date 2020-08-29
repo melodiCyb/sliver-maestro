@@ -1,8 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
-from torch.autograd import Variable
-
 
 def align(x, y, start_dim=0):
     xd, yd = x.dim(), y.dim()
@@ -30,7 +28,7 @@ def matmul(X,Y):
         results.append(result.unsqueeze(0))
     return torch.cat(results)
 
-def xrecons_grid(batch_size, B, A, T, base_img_name, count=0):
+def xrecons_grid(batch_size, B, A, T, base_img_name, model, count=0):
     """
     plots canvas for single time step
     X is x_recons, (batch_size x img_size)
@@ -67,7 +65,7 @@ def xrecons_grid(batch_size, B, A, T, base_img_name, count=0):
 
 
 
-def save_example_image(output_file):
+def save_example_image(output_file, train_loader):
     train_iter = iter(train_loader)
     data, _ = train_iter.next()
     img = data.cpu().numpy().reshape(batch_size, 28, 28)

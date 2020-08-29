@@ -1,6 +1,6 @@
 # This file is part of the REMOTE API
 # 
-# Copyright 2006-2017 Coppelia Robotics GmbH. All rights reserved. 
+# Copyright 2006-2015 Coppelia Robotics GmbH. All rights reserved. 
 # marc@coppeliarobotics.com
 # www.coppeliarobotics.com
 # 
@@ -24,29 +24,27 @@
 # along with the REMOTE API.  If not, see <http://www.gnu.org/licenses/>.
 # -------------------------------------------------------------------
 #
-# This file was automatically created for V-REP release V3.4.0 rev. 1 on April 5th 2017
+# This file was automatically created for V-REP release V3.2.3 rev4 on December 21st 2015
 
 import platform
+import os
 import struct
 import sys
-import os
 import ctypes as ct
-from vrepConst import *
+from utils.vrepConst import *
 
 #load library
 libsimx = None
 try:
-    file_extension = '.so'
     if platform.system() =='cli':
-        file_extension = '.dll'
+        libsimx = ct.CDLL("./remoteApi.dll")
     elif platform.system() =='Windows':
-        file_extension = '.dll'
+        libsimx = ct.CDLL("./remoteApi.dll") 
     elif platform.system() == 'Darwin':
-        file_extension = '.dylib'
+        libsimx = ct.CDLL("./remoteApi.dylib")
     else:
-        file_extension = '.so'
-    libfullpath = os.path.join(os.path.dirname(__file__), 'remoteApi' + file_extension)
-    libsimx = ct.CDLL(libfullpath)
+        #libsimx = ct.CDLL("./remoteApi.so")
+        libsimx = ct.CDLL(os.path.abspath(os.path.join(__file__,'../remoteApi.so')))
 except:
     print ('----------------------------------------------------')
     print ('The remoteApi library could not be loaded. Make sure')
@@ -161,7 +159,6 @@ c_CreateDummy               = ct.CFUNCTYPE(ct.c_int32,ct.c_int32, ct.c_float, ct
 c_Query                     = ct.CFUNCTYPE(ct.c_int32,ct.c_int32, ct.POINTER(ct.c_char), ct.POINTER(ct.c_ubyte), ct.c_int32, ct.POINTER(ct.c_char), ct.POINTER(ct.POINTER(ct.c_ubyte)), ct.POINTER(ct.c_int32), ct.c_int32)(("simxQuery", libsimx))
 c_GetObjectGroupData        = ct.CFUNCTYPE(ct.c_int32,ct.c_int32, ct.c_int32, ct.c_int32, ct.POINTER(ct.c_int32), ct.POINTER(ct.POINTER(ct.c_int32)), ct.POINTER(ct.c_int32), ct.POINTER(ct.POINTER(ct.c_int32)), ct.POINTER(ct.c_int32), ct.POINTER(ct.POINTER(ct.c_float)), ct.POINTER(ct.c_int32), ct.POINTER(ct.POINTER(ct.c_char)), ct.c_int32)(("simxGetObjectGroupData", libsimx))
 c_GetObjectVelocity         = ct.CFUNCTYPE(ct.c_int32,ct.c_int32, ct.c_int32, ct.POINTER(ct.c_float), ct.POINTER(ct.c_float), ct.c_int32)(("simxGetObjectVelocity", libsimx))
-c_CallScriptFunction        = ct.CFUNCTYPE(ct.c_int32,ct.c_int32,ct.POINTER(ct.c_char),ct.c_int32,ct.POINTER(ct.c_char),ct.c_int32,ct.POINTER(ct.c_int32),ct.c_int32,ct.POINTER(ct.c_float),ct.c_int32,ct.POINTER(ct.c_char),ct.c_int32,ct.POINTER(ct.c_ubyte),ct.POINTER(ct.c_int32), ct.POINTER(ct.POINTER(ct.c_int32)),ct.POINTER(ct.c_int32), ct.POINTER(ct.POINTER(ct.c_float)),ct.POINTER(ct.c_int32), ct.POINTER(ct.POINTER(ct.c_char)),ct.POINTER(ct.c_int32), ct.POINTER(ct.POINTER(ct.c_ubyte)),ct.c_int32)(("simxCallScriptFunction", libsimx))
 
 #API functions
 def simxGetJointPosition(clientID, jointHandle, operationMode):
@@ -244,11 +241,11 @@ def simxReadForceSensor(clientID, forceSensorHandle, operationMode):
     arr2 = []
     for i in range(3):
         arr2.append(torqueVector[i])
-    #if sys.version_info[0] == 3:
-    #    state=state.value
-    #else:
-    #    state=ord(state.value)
-    return ret, state.value, arr1, arr2 
+    if sys.version_info[0] == 3:
+        state=state.value
+    else:
+        state=ord(state.value)
+    return ret, state, arr1, arr2 
 
 def simxBreakForceSensor(clientID, forceSensorHandle, operationMode):
     '''
@@ -864,7 +861,6 @@ def simxCopyPasteObjects(clientID, objectHandles, operationMode):
     Please have a look at the function description/documentation in the V-REP user manual
     '''
     c_objectHandles  = (ct.c_int*len(objectHandles))(*objectHandles)
-    c_objectHandles = ct.cast(c_objectHandles,ct.POINTER(ct.c_int)) # IronPython needs this
     newObjectCount   = ct.c_int()
     newObjectHandles = ct.POINTER(ct.c_int)()
     ret = c_CopyPasteObjects(clientID, c_objectHandles, len(objectHandles), ct.byref(newObjectHandles), ct.byref(newObjectCount), operationMode)
@@ -1337,87 +1333,6 @@ def simxGetObjectGroupData(clientID, objectType, dataType, operationMode):
             stringData.append(a)
  
     return ret, handles, intData, floatData, stringData
-
-def simxCallScriptFunction(clientID, scriptDescription, options, functionName, inputInts, inputFloats, inputStrings, inputBuffer, operationMode):
-    '''
-    Please have a look at the function description/documentation in the V-REP user manual
-    '''
-
-    inputBufferV=inputBuffer
-    if sys.version_info[0] == 3:
-        if type(scriptDescription) is str:
-            scriptDescription=scriptDescription.encode('utf-8')
-        if type(functionName) is str:
-            functionName=functionName.encode('utf-8')
-        if type(inputBuffer) is bytearray:
-            inputBufferV  = (ct.c_ubyte*len(inputBuffer))(*inputBuffer)
-        if type(inputBuffer) is str:
-            inputBuffer=inputBuffer.encode('utf-8')
-            inputBufferV  = (ct.c_ubyte*len(inputBuffer))(*inputBuffer)
-    else:
-        if type(inputBuffer) is bytearray:
-            inputBufferV = (ct.c_ubyte*len(inputBuffer))(*inputBuffer)
-        if type(inputBuffer) is str:
-            inputBuffer=bytearray(inputBuffer)
-            inputBufferV = (ct.c_ubyte*len(inputBuffer))(*inputBuffer)
-    inputBufferV=ct.cast(inputBufferV,ct.POINTER(ct.c_ubyte)) # IronPython needs this
-
-    c_inInts  = (ct.c_int*len(inputInts))(*inputInts)
-    c_inInts = ct.cast(c_inInts,ct.POINTER(ct.c_int)) # IronPython needs this
-    c_inFloats  = (ct.c_float*len(inputFloats))(*inputFloats)
-    c_inFloats = ct.cast(c_inFloats,ct.POINTER(ct.c_float)) # IronPython needs this
-
-    concatStr=''.encode('utf-8')
-    for i in range(len(inputStrings)):
-        a=inputStrings[i]
-        a=a+'\0'
-        if type(a) is str:
-            a=a.encode('utf-8')
-        concatStr=concatStr+a
-    c_inStrings  = (ct.c_char*len(concatStr))(*concatStr)
-
-    intDataOut =[]
-    floatDataOut =[]
-    stringDataOut =[]
-    bufferOut =bytearray()
-
-    intDataC = ct.c_int()
-    intDataP = ct.POINTER(ct.c_int)()
-    floatDataC = ct.c_int()
-    floatDataP = ct.POINTER(ct.c_float)()
-    stringDataC = ct.c_int()
-    stringDataP = ct.POINTER(ct.c_char)()
-    bufferS = ct.c_int()
-    bufferP = ct.POINTER(ct.c_ubyte)()
-
-    ret = c_CallScriptFunction(clientID,scriptDescription,options,functionName,len(inputInts),c_inInts,len(inputFloats),c_inFloats,len(inputStrings),c_inStrings,len(inputBuffer),inputBufferV,ct.byref(intDataC),ct.byref(intDataP),ct.byref(floatDataC),ct.byref(floatDataP),ct.byref(stringDataC),ct.byref(stringDataP),ct.byref(bufferS),ct.byref(bufferP),operationMode)
-
-    if ret == 0:
-        for i in range(intDataC.value):
-            intDataOut.append(intDataP[i])
-        for i in range(floatDataC.value):
-            floatDataOut.append(floatDataP[i])
-        s = 0
-        for i in range(stringDataC.value):
-            a = bytearray()
-            while stringDataP[s] != b'\0':
-                if sys.version_info[0] == 3:
-                    a.append(int.from_bytes(stringDataP[s],'big'))
-                else:
-                    a.append(stringDataP[s])
-                s += 1
-            s += 1 #skip null
-            if sys.version_info[0] == 3:
-                a=str(a,'utf-8')
-            else:
-                a=str(a)
-            stringDataOut.append(a)
-        for i in range(bufferS.value):
-            bufferOut.append(bufferP[i])
-    if sys.version_info[0] != 3:
-        bufferOut=str(bufferOut)
-
-    return ret, intDataOut, floatDataOut, stringDataOut, bufferOut
 
 def simxGetObjectVelocity(clientID, objectHandle, operationMode):
     '''
