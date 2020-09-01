@@ -28,7 +28,7 @@ def matmul(X,Y):
         results.append(result.unsqueeze(0))
     return torch.cat(results)
 
-def xrecons_grid(batch_size, B, A, T, base_img_name, model, count=0):
+def xrecons_grid(batch_size, B, A, T, category, model, count=0):
     """
     plots canvas for single time step
     X is x_recons, (batch_size x img_size)
@@ -57,7 +57,7 @@ def xrecons_grid(batch_size, B, A, T, base_img_name, model, count=0):
         plt.matshow(img, cmap=plt.cm.gray)
         plt.axis('off')
         
-        imgname = '%s_%d_%s_%d.png' % (base_img_name, count,'test', t)
+        imgname = 'data/output/images/%s_%d_%s_%d.png' % (category, count,'test', t)
         plt.savefig(imgname)
         print(imgname)
 
@@ -65,20 +65,7 @@ def xrecons_grid(batch_size, B, A, T, base_img_name, model, count=0):
 
 
 
-def save_example_image(output_file, train_loader):
-    train_iter = iter(train_loader)
-    data, _ = train_iter.next()
-    img = data.cpu().numpy().reshape(batch_size, 28, 28)
-    imgs = xrecons_grid(img, B, A)
-    plt.matshow(imgs, cmap=plt.cm.gray)
-    plt.axis('off')
-    plt.savefig(output_file)
 
-
-def generate():
-    x = model.generate(batch_size)
-    save_image(x)
-    
     
     
  

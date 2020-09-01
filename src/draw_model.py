@@ -1,23 +1,28 @@
-import torch
 import torch.nn as nn
+import torch
 import torch.optim as optim
 from torch.autograd import Variable
 import torch.utils
 import torch.nn.utils
-import numpy as np
+from numpy import reshape
 import time
-from configparser import ConfigParser
-from utils.model_utils import *
-from utils.dataset import *
 import argparse
 import os
+import sys
+from configparser import ConfigParser
+
+base_path = os.getcwd().split('src')[0]
+sys.path.insert(1, base_path)
+
+from src.utils.model_utils import *
+from src.utils.dataset import *
 
 config = ConfigParser()
 config.read('config.cfg')
 
 
 class DRAW(nn.Module):
-    def __init__(self, T, A, B, batch_size, z_size, N, dec_size, enc_size, path):
+    def __init__(self, T, A, B, batch_size, z_size, N, dec_size, enc_size, path, category):
         super(DRAW, self).__init__()
         self.T = T
         self.batch_size = batch_size
@@ -41,10 +46,12 @@ class DRAW(nn.Module):
         self.sigmoid = nn.Sigmoid()
 
         self.path = path
+        self.category = category
         self.phases = ["train", "test"]
         self.dataloaders = {
-            phase: provider(
+            phase: self.provider(
                 path=self.path,
+                category=self.category,
                 phase=phase
             )
             for phase in self.phases
@@ -108,7 +115,6 @@ class DRAW(nn.Module):
             mu_2 = self.mus[t] * self.mus[t]
             sigma_2 = self.sigmas[t] * self.sigmas[t]
             logsigma = self.logsigmas[t]
-            # Lz += (0.5 * (mu_2 + sigma_2 - 2 * logsigma))   
             kl_terms[t] = 0.5 * torch.sum(mu_2 + sigma_2 - 2 * logsigma, 1) - self.T * 0.5
             Lz += kl_terms[t]
 
@@ -167,13 +173,15 @@ class DRAW(nn.Module):
         sigma = torch.exp(log_sigma)
         return mu + sigma * e, mu, log_sigma, sigma
 
-    def generate(self):
+    def generate(self, batch_size=False):
+        if not batch_size:
+            batch_size = self.batch_size
         with torch.no_grad():
-            h_dec_prev = Variable(torch.zeros(self.batch_size, self.dec_size))
-            dec_state = Variable(torch.zeros(self.batch_size, self.dec_size))
+            h_dec_prev = Variable(torch.zeros(batch_size, self.dec_size))
+            dec_state = Variable(torch.zeros(batch_size, self.dec_size))
 
         for t in range(self.T):
-            c_prev = Variable(torch.zeros(self.batch_size, self.A * self.B)) if t == 0 else self.cs[t - 1]
+            c_prev = Variable(torch.zeros(batch_size, self.A * self.B)) if t == 0 else self.cs[t - 1]
             z = self.normalSample()
             h_dec, dec_state = self.decoder(z, (h_dec_prev, dec_state))
             self.cs[t] = c_prev + self.write(h_dec)
@@ -191,7 +199,7 @@ class DRAW(nn.Module):
         for epoch in range(epoch_num):
             for i in range(int(len(dataloader.data) / batch_size)):
                 data = dataloader.next_batch(batch_size)
-                data = np.reshape(data, (data.shape[0], 1, A, B))
+                data = reshape(data, (data.shape[0], 1, A, B))
                 data = torch.Tensor(data)
 
                 bs = data.size()[0]
@@ -212,17 +220,17 @@ class DRAW(nn.Module):
                     if count % b == 0:
                         if phase == 'train':
                             torch.save(model.state_dict(), 'save/weights_%d.tar' % count)
-                        generate_image(count)
+                        xrecons_grid(self.batch_size, self.B, self.A, T, self.category, model, count)
                     avg_loss = 0
         if phase == 'train':
             torch.save(model.state_dict(), self.final_output_path)
-        generate_image(count)
+        xrecons_grid(self.batch_size, self.B, self.A, self.T, self.category, model, count)
 
-
-def provider(path, phase):
-    x_train, x_test, y_train, y_test = split_data(path)
-    data = Dataset(x_train) if phase == "train" else Dataset(x_test)
-    return data
+    @staticmethod
+    def provider(path, category, phase):
+        x_train, x_test, y_train, y_test = split_data(path, category)
+        data = Dataset(x_train) if phase == "train" else Dataset(x_test)
+        return data
 
 
 if __name__ == '__main__':
@@ -230,6 +238,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='sliver-maestro')
     parser.add_argument('-rp', '--rootpath')
     parser.add_argument('-phase', '--phase')  # 'train', 'test'
+    parser.add_argument('-category', '--category')
 
     args = parser.parse_args()
     root_path = args.rootpath
@@ -238,6 +247,9 @@ if __name__ == '__main__':
     phase = args.phase
     if not phase:
         phase = 'test'
+    category = args.category
+    if not category:
+        category = 'cat'
 
     path = os.path.join(root_path, config['DRAW']['path'])
 
@@ -255,7 +267,7 @@ if __name__ == '__main__':
     USE_CUDA = eval(config['DRAW']['USE_CUDA'])
     clip = float(config['DRAW']['clip'])
 
-    model = DRAW(T, A, B, batch_size, z_size, N, dec_size, enc_size, path)
+    model = DRAW(T, A, B, batch_size, z_size, N, dec_size, enc_size, path, category)
 
     if phase == 'train':
         optimizer = optim.Adam(model.parameters(), lr=learning_rate, betas=(beta1, 0.999))
@@ -266,7 +278,7 @@ if __name__ == '__main__':
 
     if phase == 'test':
         torch.set_default_tensor_type('torch.FloatTensor')
-        model = DRAW(T, A, B, batch_size, z_size, N, dec_size, enc_size, path)
+        model = DRAW(T, A, B, batch_size, z_size, N, dec_size, enc_size, path, category)
 
         if USE_CUDA:
             model.cuda()

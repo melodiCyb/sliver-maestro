@@ -1,5 +1,5 @@
 from sklearn.preprocessing import MinMaxScaler
-from utils.im_utils import *
+from src.utils.im_utils import *
 from configparser import ConfigParser
 import argparse
 import os
@@ -9,12 +9,12 @@ config.read('config.cfg')
 
 
 def adjust_output_images(initial_prefix, transparent_prefix, svg=False):
-    ''' 
+    """
     Generates black drawing pixels with a transparent background.
     
     initial_prefix: str. path of raw outputs
     transparent_prefix: str. path of generated images
-    '''
+    """
     for t in range(5, 20):
         imgname = '%s_%d.png' % (initial_prefix, t)
         new_name = '%s_%d.png' % (transparent_prefix, t)
@@ -28,7 +28,7 @@ def adjust_output_images(initial_prefix, transparent_prefix, svg=False):
         s_img = transBg(s_img)
         # img = s_img
 
-        gray = cv2.cvtColor(s_img, cv2.COLOR_BGR2GRAY)
+        #gray = cv2.cvtColor(s_img, cv2.COLOR_BGR2GRAY)
         indices = np.where(s_img <= 160)
         s_img[indices] = 0
         indices = np.where(s_img > 160)
@@ -47,16 +47,16 @@ def adjust_output_images(initial_prefix, transparent_prefix, svg=False):
             new_name = '%s_%d.svg' % (transparent_prefix, t)
             s_img = cv2.imread(imgname)
 
-            img = cv2.bitwise_not(s_img)
+            #img = cv2.bitwise_not(s_img)
             plt.imsave(new_name, s_img, format='svg')
 
 
 def generate_motion(svg_to_csv_base_path, scaled_base_path, final_motion):
     # Prepare for V-rep
     def scale_coordinates(svg_to_csv_base_path, scaled_base_path):
-        '''
+        """
         Scales X and Y coordinates for robot scene.
-        '''
+        """
         for i in range(17, 20):
             path = '%s_%d.csv' % (svg_to_csv_base_path, i)
             output_path = '%s_%d.csv' % (scaled_base_path, i)
@@ -78,11 +78,10 @@ def generate_motion(svg_to_csv_base_path, scaled_base_path, final_motion):
             df_scaled.to_csv(output_path)
 
     def join_dframes(scaled_base_path, final_motion):
-        '''
+        """
         Joins frames that consist to ordered pixels in top and bottom part of the image
-
         base_merge_path: str. path for merged dataframes
-        '''
+        """
 
         full_frame = pd.DataFrame(columns=['X(m)', 'Y(m)', 'Z(m)'])
         for j in range(17, 20):

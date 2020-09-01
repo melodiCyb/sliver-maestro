@@ -5,7 +5,7 @@ from skimage.util import invert
 from svg.path import parse_path
 import pandas as pd
 from xml.dom import minidom
-from utils import vrep
+from src.utils import vrep
 import time
 from PIL import Image
 import array
@@ -95,7 +95,7 @@ def stream_vision_sensor(visionSensorName, clientID, pause=0.0001):
     res1, visionSensorHandle = vrep.simxGetObjectHandle(clientID, visionSensorName, vrep.simx_opmode_oneshot_wait)
     # print visionSensorHandle
     # Get the image
-    option = 1
+    # option = 1
     # res2,resolution,image = vrep.simxGetVisionSensorImage(clientID, visionSensorHandle, 0, vrep.simx_opmode_streaming)
     # Allow the display to be refreshed
     plt.ion()
@@ -108,9 +108,10 @@ def stream_vision_sensor(visionSensorName, clientID, pause=0.0001):
     fig.canvas.set_window_title(visionSensorName)
     # inverse the picture
     plotimg = plt.imshow(im, origin='lower')
-    # Let some time to Vrep in order to let him send the first image, otherwise the loop will start with an empty image and will crash
+    # Let some time to Vrep in order to let him send the first image, otherwise
+    # the loop will start with an empty image and will crash
     time.sleep(1)
-    while (vrep.simxGetConnectionId(clientID) != -1):
+    while vrep.simxGetConnectionId(clientID) != -1:
         # Get the image of the vision sensor
         option = 1  # 0
         res, resolution, image = vrep.simxGetVisionSensorImage(clientID, visionSensorHandle, option,
