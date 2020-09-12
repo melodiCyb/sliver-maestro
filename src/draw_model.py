@@ -15,14 +15,13 @@ base_path = os.getcwd().split('src')[0]
 sys.path.insert(1, base_path)
 
 from src.utils.model_utils import *
-from src.utils.dataset import *
 
 config = ConfigParser()
 config.read('config.cfg')
 
 
 class DRAW(nn.Module):
-    def __init__(self, T, A, B, batch_size, z_size, N, dec_size, enc_size, path, category):
+    def __init__(self, T, A, B, batch_size, z_size, N, dec_size, enc_size, learning_rate, beta1, clip, path, category):
         super(DRAW, self).__init__()
         self.T = T
         self.batch_size = batch_size
@@ -32,6 +31,9 @@ class DRAW(nn.Module):
         self.N = N
         self.dec_size = dec_size
         self.enc_size = enc_size
+        self.learning_rate = learning_rate
+        self.beta1=beta1
+        self.clip = clip
         self.cs = [0] * T
         self.logsigmas, self.sigmas, self.mus = [0] * T, [0] * T, [0] * T
 
@@ -56,7 +58,9 @@ class DRAW(nn.Module):
             )
             for phase in self.phases
         }
-        self.final_output_path = 'save/weights_final.tar'
+
+        self.final_output_path = os.path.join(os.getcwd().split('notebook')[0], "src", "save", category, '%s_weights.tar' % category)
+        self.optimizer = optim.Adam(self.parameters(), lr=self.learning_rate, betas=(self.beta1, 0.999))
 
     def normalSample(self):
         return Variable(torch.randn(self.batch_size, self.z_size))
@@ -110,7 +114,7 @@ class DRAW(nn.Module):
         x_recons = self.sigmoid(self.cs[-1])
         Lx = criterion(x_recons, x) * self.A * self.B
         Lz = 0
-        kl_terms = [0] * T
+        kl_terms = [0] * self.T
         for t in range(self.T):
             mu_2 = self.mus[t] * self.mus[t]
             sigma_2 = self.sigmas[t] * self.sigmas[t]
@@ -191,26 +195,26 @@ class DRAW(nn.Module):
             imgs.append(self.sigmoid(img).cpu().data.numpy())
         return imgs
 
-    def start(self, epoch_num, phase):
+    def start(self, epoch_num, img_loc, phase):
 
         dataloader = self.dataloaders[phase]
         avg_loss = 0
         count = 0
         for epoch in range(epoch_num):
-            for i in range(int(len(dataloader.data) / batch_size)):
-                data = dataloader.next_batch(batch_size)
-                data = reshape(data, (data.shape[0], 1, A, B))
+            for i in range(int(len(dataloader.data) / self.batch_size)):
+                data = dataloader.next_batch(self.batch_size)
+                data = reshape(data, (data.shape[0], 1, self.A, self.B))
                 data = torch.Tensor(data)
 
                 bs = data.size()[0]
                 data = Variable(data).view(bs, -1)
-                loss = model.loss(data)
+                loss = self.loss(data)
                 avg_loss += loss.cpu().data.numpy()
                 if phase == "train":
-                    optimizer.zero_grad()
+                    self.optimizer.zero_grad()
                     loss.backward()
-                    torch.nn.utils.clip_grad_norm(model.parameters(), clip)
-                    optimizer.step()
+                    torch.nn.utils.clip_grad_norm(self.parameters(), self.clip)
+                    self.optimizer.step()
 
                 count += 1
                 a, b = (100, 3000) if phase == 'train' else (25, 750)
@@ -219,12 +223,18 @@ class DRAW(nn.Module):
                         phase, epoch, count, time.strftime("%H:%M:%S"), avg_loss / 100))
                     if count % b == 0:
                         if phase == 'train':
-                            torch.save(model.state_dict(), 'save/weights_%d.tar' % count)
-                        xrecons_grid(self.batch_size, self.B, self.A, T, self.category, model, count)
+                            root_path = os.getcwd().split('notebook')[0]
+                            weights_file = os.path.join(root_path,
+                                                        "src",
+                                                        "save",
+                                                        self.category,
+                                                        '%s_weights_%d.tar' % (self.category, count))
+                            torch.save(self.state_dict(), weights_file)
+                        xrecons_grid(self.batch_size, self.B, self.A, self.T, self.category, self, img_loc, count)
                     avg_loss = 0
         if phase == 'train':
-            torch.save(model.state_dict(), self.final_output_path)
-        xrecons_grid(self.batch_size, self.B, self.A, self.T, self.category, model, count)
+            torch.save(self.state_dict(), self.final_output_path)
+        xrecons_grid(self.batch_size, self.B, self.A, self.T, self.category, self, img_loc, count)
 
     @staticmethod
     def provider(path, category, phase):
@@ -251,7 +261,7 @@ if __name__ == '__main__':
     if not category:
         category = 'cat'
 
-    path = os.path.join(root_path, config['DRAW']['path'])
+    path = os.path.join(root_path, "src", config['DRAW']['path'])
 
     T = int(config['DRAW']['T'])
     batch_size = int(config['DRAW']['batch_size'])
@@ -267,7 +277,7 @@ if __name__ == '__main__':
     USE_CUDA = eval(config['DRAW']['USE_CUDA'])
     clip = float(config['DRAW']['clip'])
 
-    model = DRAW(T, A, B, batch_size, z_size, N, dec_size, enc_size, path, category)
+    model = DRAW(T, A, B, batch_size, z_size, N, dec_size, enc_size, learning_rate, beta1, clip, path, category)
 
     if phase == 'train':
         optimizer = optim.Adam(model.parameters(), lr=learning_rate, betas=(beta1, 0.999))
@@ -278,11 +288,12 @@ if __name__ == '__main__':
 
     if phase == 'test':
         torch.set_default_tensor_type('torch.FloatTensor')
-        model = DRAW(T, A, B, batch_size, z_size, N, dec_size, enc_size, path, category)
+        model = DRAW(T, A, B, batch_size, z_size, N, dec_size, enc_size, learning_rate, beta1, clip, path, category)
 
         if USE_CUDA:
             model.cuda()
-
-        state_dict = torch.load('save/cat_weights_final.tar', map_location=torch.device('cpu'))
+        
+        weights_file = os.path.join(root_path, "src", "save", category, '%s_weights.tar' % category) 
+        state_dict = torch.load(weights_file, map_location=torch.device('cpu'))
         model.load_state_dict(state_dict)
         model.start(epoch_num=epoch_num, phase='test')
