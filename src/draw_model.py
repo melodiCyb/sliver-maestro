@@ -11,14 +11,13 @@ import os
 import sys
 from configparser import ConfigParser
 
-base_path = os.getcwd().split('src')[0]
+base_path = os.getcwd().split('sliver-maestro')[0]
+base_path = os.path.join(base_path, "sliver-maestro")
 sys.path.insert(1, base_path)
-
 from src.utils.model_utils import *
 
 config = ConfigParser()
 config.read('config.cfg')
-
 
 class DRAW(nn.Module):
     def __init__(self, T, A, B, batch_size, z_size, N, dec_size, enc_size, learning_rate, beta1, clip, path, category):
@@ -59,7 +58,13 @@ class DRAW(nn.Module):
             for phase in self.phases
         }
 
-        self.final_output_path = os.path.join(os.getcwd().split('notebook')[0], "src", "save", category, '%s_weights.tar' % category)
+        base_path = os.getcwd().split('sliver-maestro')[0]
+        self.final_output_path = os.path.join(base_path,
+                                              "sliver-maestro",
+                                              "src",
+                                              "save",
+                                              category,
+                                              '%s_weights.tar' % category)
         self.optimizer = optim.Adam(self.parameters(), lr=self.learning_rate, betas=(self.beta1, 0.999))
 
     def normalSample(self):
@@ -195,7 +200,7 @@ class DRAW(nn.Module):
             imgs.append(self.sigmoid(img).cpu().data.numpy())
         return imgs
 
-    def start(self, epoch_num, img_loc, phase):
+    def start(self, img_loc, epoch_num, phase):
 
         dataloader = self.dataloaders[phase]
         avg_loss = 0
@@ -223,8 +228,9 @@ class DRAW(nn.Module):
                         phase, epoch, count, time.strftime("%H:%M:%S"), avg_loss / 100))
                     if count % b == 0:
                         if phase == 'train':
-                            root_path = os.getcwd().split('notebook')[0]
-                            weights_file = os.path.join(root_path,
+                            base_path = os.getcwd().split('sliver-maestro')[0]
+                            weights_file = os.path.join(base_path,
+                                                        "sliver-maestro",
                                                         "src",
                                                         "save",
                                                         self.category,
@@ -261,6 +267,8 @@ if __name__ == '__main__':
     if not category:
         category = 'cat'
 
+    base_path = root_path.split('sliver-maestro')[0]
+    root_path = os.path.join(base_path, "sliver-maestro")
     path = os.path.join(root_path, "src", config['DRAW']['path'])
 
     T = int(config['DRAW']['T'])
@@ -279,12 +287,17 @@ if __name__ == '__main__':
 
     model = DRAW(T, A, B, batch_size, z_size, N, dec_size, enc_size, learning_rate, beta1, clip, path, category)
 
+    img_loc = {'startr': 0,
+               'endr': 30,
+               'startc': 0,
+               'endc': 30}
+
     if phase == 'train':
-        optimizer = optim.Adam(model.parameters(), lr=learning_rate, betas=(beta1, 0.999))
+
         if USE_CUDA:
             model.cuda()
 
-        model.start(epoch_num=epoch_num, phase='train')
+        model.start(img_loc, epoch_num=epoch_num, phase='train')
 
     if phase == 'test':
         torch.set_default_tensor_type('torch.FloatTensor')
@@ -293,7 +306,7 @@ if __name__ == '__main__':
         if USE_CUDA:
             model.cuda()
         
-        weights_file = os.path.join(root_path, "src", "save", category, '%s_weights.tar' % category) 
+        weights_file = os.path.join(root_path, "src", "save", category, '%s_weights.tar' % category)
         state_dict = torch.load(weights_file, map_location=torch.device('cpu'))
         model.load_state_dict(state_dict)
-        model.start(epoch_num=epoch_num, phase='test')
+        model.start(img_loc, epoch_num=epoch_num, phase='test')

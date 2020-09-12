@@ -57,69 +57,9 @@ class Dataset:
 
 
 # Place all the npy quickdraw files in filepath
-# MC: Do we need this function?
-def split_data_multiple_files(filepath, category=False, shuffle=False):
-    txt_name_list = []
-    if category:
-        filepath = os.path.join(filepath, category + '\\') 
-        for (dirpath, dirnames, filenames) in walk(filepath):
-            for filename in filenames:
-                if filename.endswith('.npy'):
-                    txt_name_list.append(filename)
-                    break
-    else:
-        for (dirpath, dirnames, filenames) in walk(filepath):
-            if filenames != '.DS_Store':
-                txt_name_list.extend(filenames)
-                break
-
-    x_train = []
-    x_test = []
-    y_train = []
-    y_test = []
-    xtotal = []
-    ytotal = []
-    # Setting value to be 80000 for the final dataset
-    slice_train = int(80000 / len(txt_name_list))
-    i = 0
-    seed = np.random.randint(1, 10e6)
-
-    # Creates test/train split with quickdraw data
-    for txt_name in txt_name_list:
-        txt_path = filepath + txt_name
-        xx = np.load(txt_path)
-        try:
-            xx = xx.astype('float32') / 255.  # scale images to binary
-        except AttributeError:
-            pass
-        try:
-            y = [i] * len(xx)
-            if shuffle:
-                np.random.seed(seed)
-                np.random.shuffle(xx)
-                np.random.seed(seed)
-                np.random.shuffle(y)
-            xx = xx[:slice_train]
-            y = y[:slice_train]
-            if i != 0:
-                xtotal = np.concatenate((xx, xtotal), axis=0)
-                ytotal = np.concatenate((y, ytotal), axis=0)
-            else:
-                xtotal = xx
-                ytotal = y
-            i += 1
-            if shuffle:
-                x_train, x_test, y_train, y_test = train_test_split(xtotal, ytotal, test_size=0.2, random_state=42)
-            else:
-                x_train, x_test, y_train, y_test = train_test_split(xtotal, ytotal, test_size=0.2, shuffle=False)
-        except TypeError:
-            pass
-    return x_train, x_test, y_train, y_test
-
-# Place all the npy quickdraw files in filepath
 def split_data(filepath, category, shuffle=False):
     # Creates test/train split with quickdraw data
-    filepath = os.path.join(filepath, category + '\\' + '%s.npy' % category) 
+    filepath = os.path.join(filepath, category, '%s.npy' % category)
     xx = np.load(filepath)
     y = [0] * len(xx)
     try:
@@ -157,19 +97,19 @@ def align(x, y, start_dim=0):
 
 def create_folders(root_path, categories, category):
 
-    data_path = os.path.join(root_path + "src" + "\\" + "data")
-    save_path = os.path.join(root_path + "src" + "\\" + "save")
-    input_path = os.path.join(data_path + "\\" + "input")
-    output_path = os.path.join(data_path + "\\" + "output")
-    images_path = os.path.join(output_path + "\\" + "images")
-    positions_path = os.path.join(output_path + "\\" + "positions")
-    raw_path = os.path.join(data_path + "\\" + "raw")
-    category_save_path = os.path.join(save_path + "\\" + categories[category])
-    category_input_path = os.path.join(data_path + "\\" + "input" + "\\" + categories[category])
-    category_raw_path = os.path.join(data_path + "\\" + "raw" + "\\" + categories[category])
-    category_images_path = os.path.join(images_path + "\\" + categories[category])
-    base_input = os.path.join(category_input_path + "\\" + categories[category])
-    base_raw = os.path.join(category_raw_path + "\\" + categories[category])
+    data_path = os.path.join(root_path, "src", "data")
+    save_path = os.path.join(root_path, "src", "save")
+    input_path = os.path.join(data_path, "input")
+    output_path = os.path.join(data_path, "output")
+    images_path = os.path.join(output_path, "images")
+    positions_path = os.path.join(output_path, "positions")
+    raw_path = os.path.join(data_path, "raw")
+    category_save_path = os.path.join(save_path, categories[category])
+    category_input_path = os.path.join(data_path, "input", categories[category])
+    category_raw_path = os.path.join(data_path, "raw", categories[category])
+    category_images_path = os.path.join(images_path, categories[category])
+    base_input = os.path.join(category_input_path, categories[category])
+    base_raw = os.path.join(category_raw_path, categories[category])
     
     paths_dict = {'data_path':data_path,
                   'save_path':save_path,
@@ -195,8 +135,8 @@ def create_folders(root_path, categories, category):
     src_file = "gs://quickdraw_dataset/full/raw/" + categories[category] + ".ndjson"
     src_list.append(src_file)
 
-    dst_file_input = os.path.join(category_input_path + "\\" + categories[category])
-    dst_file_raw = os.path.join(category_raw_path + "\\" + categories[category])
+    dst_file_input = os.path.join(category_input_path, categories[category])
+    dst_file_raw = os.path.join(category_raw_path, categories[category])
 
     dst_list.append(dst_file_input + ".npy")
     dst_list.append(dst_file_raw + ".ndjson")
@@ -319,8 +259,9 @@ def xrecons_grid(batch_size, B, A, T, category, model, img_loc, count=0):
         img = img[img_loc['startr']:img_loc['endr'],img_loc['startc']:img_loc['endc']] # the one at the sixth row and the fifth column
         plt.matshow(img, cmap=plt.cm.gray)
         plt.axis('off')
-        root_path = os.getcwd().split('notebook')[0]
-        imgname = os.path.join(root_path,
+        base_path = os.getcwd().split('sliver-maestro')[0]
+        imgname = os.path.join(base_path,
+                               "sliver-maestro",
                                "src",
                                "data",
                                "output",
