@@ -63,7 +63,7 @@ Simulation
       
 2. Setup the environment Install the requirements:
 
-       conda create --name sliver-maestro 
+       conda create --name sliver-maestro python=3.6
        conda activate sliver-maestro
        pip install -r requirements.txt
 
@@ -80,7 +80,7 @@ Simulation
        
 5. Train model (Optional)
        
-       python draw_model.py 
+       python draw_model.py
        
 6. Use a pre-trained model (Optional): pre-trained models are located in notebooks/model folder with options:
 

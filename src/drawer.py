@@ -1,39 +1,36 @@
-from utils import vrep, vrepConst
-import numpy as np
-import time
-import sys
-import matplotlib.pyplot as plt
-from PIL import Image
-import array
+import sys, os
 from configparser import ConfigParser
-from utils.im_utils import *
+base_path = os.getcwd().split('src')[0]
+sys.path.insert(1, base_path)
+from src.utils import vrep
+from src.utils.im_utils import *
 
 config = ConfigParser()
 config.read('config.cfg')
 
 
-def get_coordinates(path, use_z=True, plot_fig = True):
+def get_coordinates(path, use_z=True, plot_fig=True):
     # use only X, Y 
     if use_z:
-        coordinates = np.genfromtxt(path, delimiter=',', skip_header=2, usecols = (1, 2, 3), dtype=np.float)
+        coordinates = np.genfromtxt(path, delimiter=',', skip_header=2, usecols=(1, 2, 3), dtype=np.float)
     else:
-        coordinates = np.genfromtxt(path, delimiter=',', skip_header=2, usecols = (1, 2), dtype=np.float)
-    
+        coordinates = np.genfromtxt(path, delimiter=',', skip_header=2, usecols=(1, 2), dtype=np.float)
+
     if plot_fig:
         plt.figure()
-        plt.plot(coordinates[:,0], coordinates[:,1])
+        plt.plot(coordinates[:, 0], coordinates[:, 1])
         plt.show()
-    
-    coordinates[:,0] = (coordinates[:,0] - coordinates[0,0]) / 2.0
-    coordinates[:,1] = (coordinates[:,1] - coordinates[0,1]) / 2.0
+
+    coordinates[:, 0] = (coordinates[:, 0] - coordinates[0, 0]) / 2.0
+    coordinates[:, 1] = (coordinates[:, 1] - coordinates[0, 1]) / 2.0
     return coordinates
 
 
-def draw(clientID, coordinates, final_xy, object_name, use_z=True):
+def draw(clientID, coordinates, final_xy, object_name, final_pos=False, use_z=True):
     res, objs = vrep.simxGetObjects(clientID, vrep.sim_handle_all, vrep.simx_opmode_oneshot_wait)
     if res == vrep.simx_return_ok:
         res, v0 = vrep.simxGetObjectHandle(clientID, object_name, vrep.simx_opmode_oneshot_wait)
-    
+
         # Reads the pen position X,Y,Z simxGetVisionSensorImage
         res, pos = vrep.simxGetObjectPosition(clientID, v0, vrep.sim_handle_parent, vrep.simx_opmode_oneshot_wait)
         print("Initial Position", pos)
@@ -46,12 +43,13 @@ def draw(clientID, coordinates, final_xy, object_name, use_z=True):
             if use_z:
                 cmd_pos = np.array(pos) + coordinate
             else:
-                cmd_pos = np.array(pos) + np.append(coordinate, [0], axis=0) 
+                cmd_pos = np.array(pos) + np.append(coordinate, [0], axis=0)
             print("Position: ", i, coordinate, cmd_pos)
 
             i += 1
             # Sets the new position
-            res = vrep.simxSetObjectPosition(clientID, v0, vrep.sim_handle_parent, cmd_pos, vrep.simx_opmode_oneshot_wait)
+            res = vrep.simxSetObjectPosition(clientID, v0, vrep.sim_handle_parent, cmd_pos,
+                                             vrep.simx_opmode_oneshot_wait)
 
             if res != 0:
                 vrep.simxFinish(clientID)
@@ -73,26 +71,26 @@ def draw(clientID, coordinates, final_xy, object_name, use_z=True):
 
             for i in range(10):
                 # lift the pen
-                cmd_pos = cmd_pos + dif_pos 
-                res = vrep.simxSetObjectPosition(clientID, v0, vrep.sim_handle_parent, cmd_pos, vrep.simx_opmode_oneshot_wait)
+                cmd_pos = cmd_pos + dif_pos
+                res = vrep.simxSetObjectPosition(clientID, v0, vrep.sim_handle_parent, cmd_pos,
+                                                 vrep.simx_opmode_oneshot_wait)
                 time.sleep(0.05)
     else:
         print('Remote API function call returned with error code: ', res)
 
 
-
 if __name__ == '__main__':
     # close all open connections
     vrep.simxFinish(-1)
-    coordinates = get_coordinates(path = config['generate_motion']['final_motion'])
-    final_xy = [] 
+    coordinates = get_coordinates(path=config['generate_motion']['final_motion'])
+    final_xy = []
     vision_sensor = False
     object_name = 'feltPen_invisible'
 
     print('Simulation starts..')
-    clientID = vrep.simxStart('127.0.0.1', 19997, True, True, 5000, 5) #19999
-    if clientID!=-1:
-        print('Connected to remote API server') 
+    clientID = vrep.simxStart('127.0.0.1', 19997, True, True, 5000, 5)  # 19999
+    if clientID != -1:
+        print('Connected to remote API server')
         if not vision_sensor:
             draw(clientID, coordinates, final_xy, object_name)
         else:
@@ -103,6 +101,6 @@ if __name__ == '__main__':
                 stream_vision_sensor('Baxter_camera', clientID, 0.0001)
         vrep.simxFinish(clientID)
     else:
-            print('Connection non successful')
-            sys.exit('Could not connect')
+        print('Connection non successful')
+        sys.exit('Could not connect')
 print('Simulation completed')
