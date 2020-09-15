@@ -1,7 +1,5 @@
 import os
-import numpy as np
 from sklearn.model_selection import train_test_split
-from os import walk
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
@@ -47,12 +45,12 @@ class Dataset:
             self._index_in_epoch = batch_size - rest_num_examples
             end = self._index_in_epoch
             data_new_part = self._data[start:end]
-            print('start, end:{}, {}'.format(start, end))
+            #print('start, end:{}, {}'.format(start, end))
             return np.concatenate((data_rest_part, data_new_part), axis=0)
         else:
             self._index_in_epoch += batch_size
             end = self._index_in_epoch
-            print('start, end:{}, {}'.format(start, end))
+            #print('start, end:{}, {}'.format(start, end))
             return self._data[start:end]
 
 
@@ -231,45 +229,5 @@ def matmul(X,Y):
         results.append(result.unsqueeze(0))
     return torch.cat(results)
 
-def xrecons_grid(batch_size, B, A, T, category, model, img_loc, count=0):
-    """
-    plots canvas for single time step
-    X is x_recons, (batch_size x img_size)
-    assumes features = BxA images
-    batch is assumed to be a square number
-    """
-    X = model.generate(batch_size)
-    for t in range(T):
-        padsize = 1
-        padval = .5
-        ph = B + 2 * padsize
-        pw = A + 2 * padsize
-        batch_size = X[t].shape[0]
-        N = int(np.sqrt(batch_size))
-        X[t] = X[t].reshape((N,N,B,A))
-        img = np.ones((N*ph,N*pw))*padval
-        
-        for i in range(N):
-            for j in range(N):
-                startr = i * ph + padsize
-                endr = startr + B
-                startc = j * pw + padsize
-                endc = startc + A
-                img[startr:endr, startc:endc]=X[t][i, j, :, :]  
-        img = img[img_loc['startr']:img_loc['endr'],img_loc['startc']:img_loc['endc']] # the one at the sixth row and the fifth column
-        plt.matshow(img, cmap=plt.cm.gray)
-        plt.axis('off')
-        base_path = os.getcwd().split('sliver-maestro')[0]
-        imgname = os.path.join(base_path,
-                               "sliver-maestro",
-                               "src",
-                               "data",
-                               "output",
-                               "images",
-                               category,
-                               '%s_%d_%s_%d.png' % (category, count,'test', t))
-        plt.savefig(imgname)
-        print(imgname)
 
-    return img
 
