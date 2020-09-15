@@ -17,36 +17,42 @@ sys.path.insert(1, base_path)
 from src.utils.model_utils import *
 
 config = ConfigParser()
-config.read('config.cfg')
+cfg_file = os.path.join(base_path, "src/config.cfg")
+config.read(cfg_file)
+
 
 class DRAW(nn.Module):
-    def __init__(self, T, A, B, batch_size, z_size, N, dec_size, enc_size, learning_rate, beta1, clip, path, category):
+    def __init__(self, category, base_path=base_path):
         super(DRAW, self).__init__()
-        self.T = T
-        self.batch_size = batch_size
-        self.A = A
-        self.B = B
-        self.z_size = z_size
-        self.N = N
-        self.dec_size = dec_size
-        self.enc_size = enc_size
-        self.learning_rate = learning_rate
-        self.beta1=beta1
-        self.clip = clip
-        self.cs = [0] * T
-        self.logsigmas, self.sigmas, self.mus = [0] * T, [0] * T, [0] * T
+        self.T = int(config['DRAW']['T'])
+        self.batch_size = int(config['DRAW']['batch_size'])
+        self.A = int(config['DRAW']['A'])
+        self.B = int(config['DRAW']['B'])
+        self.z_size = int(config['DRAW']['z_size'])
+        self.N = int(config['DRAW']['N'])
+        self.dec_size = int(config['DRAW']['dec_size'])
+        self.enc_size = int(config['DRAW']['enc_size'])
+        self.epoch_num = int(config['DRAW']['epoch_num'])
+        self.learning_rate = float(config['DRAW']['learning_rate'])
+        self.beta1 = float(config['DRAW']['beta1'])
+        self.USE_CUDA = eval(config['DRAW']['USE_CUDA'])
+        self.clip = float(config['DRAW']['clip'])
 
-        self.encoder = nn.LSTMCell(2 * N * N + dec_size, enc_size)
-        self.mu_linear = nn.Linear(dec_size, z_size)
-        self.sigma_linear = nn.Linear(dec_size, z_size)
 
-        self.decoder = nn.LSTMCell(z_size, dec_size)
-        self.dec_linear = nn.Linear(dec_size, 5)
-        self.dec_w_linear = nn.Linear(dec_size, N * N)
+        self.cs = [0] * self.T
+        self.logsigmas, self.sigmas, self.mus = [0] * self.T, [0] * self.T, [0] * self.T
+
+        self.encoder = nn.LSTMCell(2 * self.N * self.N + self.dec_size, self.enc_size)
+        self.mu_linear = nn.Linear(self.dec_size, self.z_size)
+        self.sigma_linear = nn.Linear(self.dec_size, self.z_size)
+
+        self.decoder = nn.LSTMCell(self.z_size, self.dec_size)
+        self.dec_linear = nn.Linear(self.dec_size, 5)
+        self.dec_w_linear = nn.Linear(self.dec_size, self.N * self.N)
 
         self.sigmoid = nn.Sigmoid()
 
-        self.path = path
+        self.path = os.path.join(base_path, "src", config['DRAW']['path'])
         self.category = category
         self.phases = ["train", "test"]
         self.dataloaders = {
@@ -182,30 +188,13 @@ class DRAW(nn.Module):
         sigma = torch.exp(log_sigma)
         return mu + sigma * e, mu, log_sigma, sigma
 
-    def generate(self, batch_size=False):
-        if not batch_size:
-            batch_size = self.batch_size
-        with torch.no_grad():
-            h_dec_prev = Variable(torch.zeros(batch_size, self.dec_size))
-            dec_state = Variable(torch.zeros(batch_size, self.dec_size))
 
-        for t in range(self.T):
-            c_prev = Variable(torch.zeros(batch_size, self.A * self.B)) if t == 0 else self.cs[t - 1]
-            z = self.normalSample()
-            h_dec, dec_state = self.decoder(z, (h_dec_prev, dec_state))
-            self.cs[t] = c_prev + self.write(h_dec)
-            h_dec_prev = h_dec
-        imgs = []
-        for img in self.cs:
-            imgs.append(self.sigmoid(img).cpu().data.numpy())
-        return imgs
-
-    def start(self, img_loc, epoch_num, phase):
+    def start(self, phase):
 
         dataloader = self.dataloaders[phase]
         avg_loss = 0
         count = 0
-        for epoch in range(epoch_num):
+        for epoch in range(self.epoch_num):
             for i in range(int(len(dataloader.data) / self.batch_size)):
                 data = dataloader.next_batch(self.batch_size)
                 data = reshape(data, (data.shape[0], 1, self.A, self.B))
@@ -226,21 +215,29 @@ class DRAW(nn.Module):
                 if count % a == 0:
                     print("Phase: %s | Epoch: %s | Count: %d \ Start Time: %s | Loss: %d" % (
                         phase, epoch, count, time.strftime("%H:%M:%S"), avg_loss / 100))
-                    if count % b == 0:
-                        if phase == 'train':
-                            base_path = os.getcwd().split('sliver-maestro')[0]
-                            weights_file = os.path.join(base_path,
-                                                        "sliver-maestro",
-                                                        "src",
-                                                        "save",
-                                                        self.category,
-                                                        '%s_weights_%d.tar' % (self.category, count))
-                            torch.save(self.state_dict(), weights_file)
-                        xrecons_grid(self.batch_size, self.B, self.A, self.T, self.category, self, img_loc, count)
+
                     avg_loss = 0
         if phase == 'train':
             torch.save(self.state_dict(), self.final_output_path)
-        xrecons_grid(self.batch_size, self.B, self.A, self.T, self.category, self, img_loc, count)
+
+    def generate(self, batch_size=False):
+        """generates canvases"""
+        if not batch_size:
+            batch_size = self.batch_size
+        with torch.no_grad():
+            h_dec_prev = Variable(torch.zeros(batch_size, self.dec_size))
+            dec_state = Variable(torch.zeros(batch_size, self.dec_size))
+
+        for t in range(self.T):
+            c_prev = Variable(torch.zeros(batch_size, self.A * self.B)) if t == 0 else self.cs[t - 1]
+            z = self.normalSample()
+            h_dec, dec_state = self.decoder(z, (h_dec_prev, dec_state))
+            self.cs[t] = c_prev + self.write(h_dec)
+            h_dec_prev = h_dec
+        imgs = []
+        for img in self.cs:
+            imgs.append(self.sigmoid(img).cpu().data.numpy())
+        return imgs
 
     @staticmethod
     def provider(path, category, phase):
@@ -248,65 +245,3 @@ class DRAW(nn.Module):
         data = Dataset(x_train) if phase == "train" else Dataset(x_test)
         return data
 
-
-if __name__ == '__main__':
-
-    parser = argparse.ArgumentParser(prog='sliver-maestro')
-    parser.add_argument('-rp', '--rootpath')
-    parser.add_argument('-phase', '--phase')  # 'train', 'test'
-    parser.add_argument('-category', '--category')
-
-    args = parser.parse_args()
-    root_path = args.rootpath
-    if not root_path:
-        root_path = os.getcwd()
-    phase = args.phase
-    if not phase:
-        phase = 'test'
-    category = args.category
-    if not category:
-        category = 'cat'
-
-    base_path = root_path.split('sliver-maestro')[0]
-    root_path = os.path.join(base_path, "sliver-maestro")
-    path = os.path.join(root_path, "src", config['DRAW']['path'])
-
-    T = int(config['DRAW']['T'])
-    batch_size = int(config['DRAW']['batch_size'])
-    A = int(config['DRAW']['A'])
-    B = int(config['DRAW']['B'])
-    z_size = int(config['DRAW']['z_size'])
-    N = int(config['DRAW']['N'])
-    dec_size = int(config['DRAW']['dec_size'])
-    enc_size = int(config['DRAW']['enc_size'])
-    epoch_num = int(config['DRAW']['epoch_num'])
-    learning_rate = float(config['DRAW']['learning_rate'])
-    beta1 = float(config['DRAW']['beta1'])
-    USE_CUDA = eval(config['DRAW']['USE_CUDA'])
-    clip = float(config['DRAW']['clip'])
-
-    model = DRAW(T, A, B, batch_size, z_size, N, dec_size, enc_size, learning_rate, beta1, clip, path, category)
-
-    img_loc = {'startr': 0,
-               'endr': 30,
-               'startc': 0,
-               'endc': 30}
-
-    if phase == 'train':
-
-        if USE_CUDA:
-            model.cuda()
-
-        model.start(img_loc, epoch_num=epoch_num, phase='train')
-
-    if phase == 'test':
-        torch.set_default_tensor_type('torch.FloatTensor')
-        model = DRAW(T, A, B, batch_size, z_size, N, dec_size, enc_size, learning_rate, beta1, clip, path, category)
-
-        if USE_CUDA:
-            model.cuda()
-        
-        weights_file = os.path.join(root_path, "src", "save", category, '%s_weights.tar' % category)
-        state_dict = torch.load(weights_file, map_location=torch.device('cpu'))
-        model.load_state_dict(state_dict)
-        model.start(img_loc, epoch_num=epoch_num, phase='test')
