@@ -30,7 +30,7 @@ Recommended svg converter: [Link](https://image.online-convert.com/convert-to-sv
 ## Simulation 
 * Final simulation
 
-![bankstergif](https://github.com/melodiCyb/sliver-maestro/blob/master/gifs/bankster.gif)
+![bankstergif](https://github.com/melodiCyb/sliver-maestro/blob/master/gifs/generated.gif)
 
 
 * Raw data sample simulation
@@ -93,9 +93,11 @@ You can see the created output images in the directory ~/sliver-maestro/src/data
 
        python3 postprocess.py
        
-8. Run robot simulation
+8. Run robot simulation for the generated images
 
        python3 drawer.py
+       
+TODO: add raw data simulation
 
 ### PyGame Simulation
        
