@@ -60,6 +60,11 @@ Recommended svg converter: [Link](https://image.online-convert.com/convert-to-sv
 
        export PYTHONNOUSERSITE=True
        conda env create -f environment.yml
+3. Re-start the terminal and activate the environment:
+
+       export PYTHONNOUSERSITE=True
+       conda activate sliver-maestro
+      
 
 ### Deep Recurrent Attentive Writer
 
