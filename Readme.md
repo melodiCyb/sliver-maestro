@@ -6,18 +6,14 @@
 A human learns how to draw with simple shapes and sketching.  At first, we just try to copy it by following the image pixel by pixel and we don’t need a demonstration or a hard-coded drawing steps to achieve this. However, for robots it’s not the case and we would like to democratize art by enabling self-learning for robots.
 
 ### What it does
-Sliver Maestro is a simulated artistic robot and its expertise is doodling! Sliver Maestro generates the required stroke movements by just one look at an image.  
+Sliver Maestro is a simulated artistic robot and its expertise is doodling! Sliver Maestro applies sketching by just one look at an image and experiencing how a human would draw it. 
 
 ## Model
-
-### Data
-
-Dataset Description: The Quick Draw Dataset is a collection of 50 million drawings across 345 categories, contributed by players of the game Quick, Draw!. Files are simplified 28x28 grayscale bitmaps in numpy format.
 
 
 ### How we built it
 
-We used [DeepMind’s Deep Recurrent Attentive Writer model](https://deepmind.com/research/publications/draw-recurrent-neural-network-image-generation) and [Quick! Draw](https://github.com/googlecreativelab/quickdraw-dataset) dataset to generate sequential images and extract stroke movements. As shown in the animation below, the advantage of DRAW to  other image generation approaches is that the model generates the entire scene by reconstructing images step by step where parts of a scene are created independently from others, and approximate sketches are successively refined. 
+We used [DeepMind’s Deep Recurrent Attentive Writer model](https://deepmind.com/research/publications/draw-recurrent-neural-network-image-generation) and [Quick, Draw!](https://github.com/googlecreativelab/quickdraw-dataset) dataset to generate sequential images and extract stroke movements. The Quick, Draw! dataset is a collection of 50 million drawings across 345 categories, contributed by players of the game Quick, Draw!. Files are simplified 28x28 grayscale bitmaps in numpy format. As shown in the animation below, the advantage of DRAW to  other image generation approaches is that the model generates the entire scene by reconstructing images step by step where parts of a scene are created independently from others, and approximate sketches are successively refined. 
 
 ![test](https://github.com/melodiCyb/neural-networks/blob/master/catdraw.gif)
 
@@ -43,10 +39,8 @@ Recommended svg converter: [Link](https://image.online-convert.com/convert-to-sv
 
 
 
-## Requirements
-* Python >= 3.5
+## Simulation Requirements
 
-Simulation
 * Ubuntu 18.04
 * CoppeliaSim 4_0_0 
 * Remote API
@@ -56,6 +50,7 @@ Simulation
 
 ## How to run
 
+### Initial Setup
 1. Clone the repo and cd into it:
         
        git clone https://github.com/melodiCyb/sliver-maestro.git
@@ -63,45 +58,51 @@ Simulation
       
 2. Setup the environment Install the requirements:
 
-       conda create --name sliver-maestro python=3.6
-       conda activate sliver-maestro
-       pip install -r requirements.txt
+       export PYTHONNOUSERSITE=True
+       conda env create -f environment.yml
 
-3. Start another terminal and run:
+### Deep Recurrent Attentive Writer
+
+TODO: add download data step
+
+3. Train model (Optional) 
+       
+       python3 train.py --phase train --category cat
+        
+4. Generate image sequence 
+    
+       python3 generate_images.py --category cat
+
+You can see the created output images in the directory ~/sliver-maestro/src/data/output/images    
+
+### CoppeliaSim Simulation
+
+
+5. Start another terminal and run:
 
        ./coppeliaSim.sh
        
-4. After the simulation UI starts upload bankster scene and run:
+6. After the simulation UI starts upload bankster scene and run:
  
        cd sliver-maestro
        catkin_make
        source devel/setup.bash
        cd src
        
-5. Train model (Optional)
-       
-       python draw_model.py
-       
-6. Use a pre-trained model (Optional): pre-trained models are located in notebooks/model folder with options:
+7. Generate drawing coordinates for the simulated robot
 
-        * cat_draw.pth
-        * draw.pth (moon_draw.pth)
-        
+       python3 postprocess.py
        
-6. Generate drawings using samples (Optional)
-        
-       python postprocess.py
-       
-7. Run robot simulation (Optional)
+8. Run robot simulation
 
-       python drawer.py
-       
-8. Run PyGame 
-        
-        python pgame_runner.py
-        
-* You can see the created output images in the directory ~/sliver-maestro/src/data/output/images
+       python3 drawer.py
 
+### PyGame Simulation
+       
+9. Run PyGame 
+        
+        python3 pgame_runner.py
+        
 
 Directory layout:
 
@@ -109,32 +110,32 @@ Directory layout:
         ├── gifs        
         │   ├── cat_drawing.gif
         ├── notebooks
-        |   └── draw_model.ipynb
-        |   └── postprocessing.ipynb
+        |   └── draw_cat.ipynb
+        |   └── draw_moon.ipynb
         │── src
         │   ├── data         
         |       └── input
-        |           └──full_numpy_bitmap_cat.npy     
         |       └── output
         |           └── images
-        |                └── datacat10206455_0.png
-        |                └── .
-        |                └── .
-        |           └── positions
-        |                └── final_motion.csv
-        |                └── .
+        |           └── positions       
+        |   ├── save
         |   ├── simulation
         |       └── sliver-maestro.ttt
         |    ├── utils
-        |       └── dataset.py
         |       └── im_utils.py
         |       └── model_utils.py
         │       └── vrep.py
         │       └── vrepConst.py
-        │   └── postprocess.py
-        |   └── draw_model.py
+        │   └── config.cfg
+        │   └── draw_model.py
         |   └── drawer.py
+        |   └── generate_images.py
+        |   └── pgame_runner.py
+        |   └── postprocess.py
+        |   └── train.py
+        │── environment.yml
         └── Readme.md
+        
         
 ## Resources
 1. PyTorch implementation of Deep Recurrent Attentive Writer model was modified from [this repo](https://github.com/chenzhaomin123/draw_pytorch)

@@ -1,8 +1,14 @@
-from sklearn.preprocessing import MinMaxScaler
-from src.utils.im_utils import *
+import os
+import sys
 from configparser import ConfigParser
 import argparse
-import os
+from sklearn.preprocessing import MinMaxScaler
+
+base_path = os.getcwd().split('sliver-maestro')[0]
+base_path = os.path.join(base_path, "sliver-maestro")
+sys.path.insert(1, base_path)
+from src.utils.im_utils import *
+
 
 config = ConfigParser()
 config.read('config.cfg')
