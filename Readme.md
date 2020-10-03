@@ -39,12 +39,8 @@ Recommended svg converter: [Link](https://image.online-convert.com/convert-to-sv
 
 ## Simulation Requirements
 
-* Ubuntu 18.04
-* CoppeliaSim 4_0_0 
-* Remote API
-* vrep_pkgs
-
-
+* Ubuntu 18.04 (Recommended)
+* [CoppeliaSim 4_0_0](https://coppeliarobotics.com/previousVersions)
 
 ## How to run
 
@@ -58,6 +54,7 @@ Recommended svg converter: [Link](https://image.online-convert.com/convert-to-sv
 
        export PYTHONNOUSERSITE=True
        conda env create -f environment.yml
+       
 3. Re-start the terminal and activate the environment:
 
        export PYTHONNOUSERSITE=True

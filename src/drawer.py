@@ -3,7 +3,6 @@ from configparser import ConfigParser
 import argparse
 base_path = os.getcwd().split('src')[0]
 sys.path.insert(1, base_path)
-from src.utils import vrep
 from src.utils.im_utils import *
 
 config = ConfigParser()
