@@ -100,7 +100,7 @@ You can see the created output images in the directory ~/sliver-maestro/src/data
        
 10. Run robot simulation for the generated drawing sequence
 
-       python3 drawer.py 
+        python3 drawer.py 
        
 11. Run robot simulation for a human drawing 
         
