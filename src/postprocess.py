@@ -110,7 +110,6 @@ def generate_motion(svg_to_csv_base_path, scaled_base_path, final_motion):
     join_dframes(scaled_base_path, final_motion)
 
 def extract_raw_motion(raw_data, raw_motion, idx):
-    # TODO: add scaling
     with open(raw_data) as f:
         data = ndjson.load(f)
 

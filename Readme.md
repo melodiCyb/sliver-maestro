@@ -1,7 +1,5 @@
 ## Project Description
 
-[Hackathon project for Global PyTorch Summer Hackathon 2020](https://pytorch2020.devpost.com/)
-
 ### Inspiration
 A human learns how to draw with simple shapes and sketching.  At first, we just try to copy it by following the image pixel by pixel and we don’t need a demonstration or a hard-coded drawing steps to achieve this. However, for robots it’s not the case and we would like to democratize art by enabling self-learning for robots.
 
@@ -64,17 +62,19 @@ Recommended svg converter: [Link](https://image.online-convert.com/convert-to-sv
 
        export PYTHONNOUSERSITE=True
        conda activate sliver-maestro
+       cd src
       
+### Download Quick, Draw! dataset
+
+4. TODO: add download data step
 
 ### Deep Recurrent Attentive Writer
 
-TODO: add download data step
+5. Train model (Optional) 
 
-3. Train model (Optional) 
-       
        python3 train.py --phase train --category cat
         
-4. Generate image sequence 
+6. Generate image sequence 
     
        python3 generate_images.py --category cat
 
@@ -83,33 +83,36 @@ You can see the created output images in the directory ~/sliver-maestro/src/data
 ### CoppeliaSim Simulation
 
 
-5. Start another terminal and run:
+7. Start another terminal and run:
 
        ./coppeliaSim.sh
        
-6. After the simulation UI starts upload bankster scene and run:
+8. After the simulation UI starts upload sliver maestro scene and run:
  
        cd sliver-maestro
        catkin_make
        source devel/setup.bash
        cd src
        
-7. Generate drawing coordinates for the simulated robot
+9. Generate drawing coordinates for the simulated robot
 
        python3 postprocess.py
        
-8. Run robot simulation for the generated images
+10. Run robot simulation for the generated drawing sequence
 
-       python3 drawer.py
+       python3 drawer.py 
        
-TODO: add raw data simulation
+11. Run robot simulation for a human drawing 
+        
+        python3 drawer.py --raw True
 
 ### PyGame Simulation
        
-9. Run PyGame 
+12. Run PyGame for the generated drawing sequence
         
         python3 pgame_runner.py
         
+13. TODO: add PyGame raw version 
 
 Directory layout:
 
@@ -124,7 +127,8 @@ Directory layout:
         |       └── input
         |       └── output
         |           └── images
-        |           └── positions       
+        |           └── positions
+        |       └── raw      
         |   ├── save
         |   ├── simulation
         |       └── sliver-maestro.ttt
