@@ -1,8 +1,15 @@
-from sklearn.preprocessing import MinMaxScaler
-from src.utils.im_utils import *
+import os
+import sys
+import ndjson
 from configparser import ConfigParser
 import argparse
-import os
+from sklearn.preprocessing import MinMaxScaler
+
+base_path = os.getcwd().split('sliver-maestro')[0]
+base_path = os.path.join(base_path, "sliver-maestro")
+sys.path.insert(1, base_path)
+from src.utils.im_utils import *
+
 
 config = ConfigParser()
 config.read('config.cfg')
@@ -102,14 +109,56 @@ def generate_motion(svg_to_csv_base_path, scaled_base_path, final_motion):
     scale_coordinates(svg_to_csv_base_path, scaled_base_path)
     join_dframes(scaled_base_path, final_motion)
 
+def extract_raw_motion(raw_data, raw_motion, idx):
+    with open(raw_data) as f:
+        data = ndjson.load(f)
+
+    drawings = data[idx]['drawing']
+    strokes = len(drawings)
+    df = pd.DataFrame(columns=['Seconds', 'X(m)', 'Y(m)', 'Z(m)'])
+    for stroke in range(strokes):
+        drawing = drawings[stroke]
+        l_0 = np.array([drawing[0]])
+        l_1 = np.array([drawing[1]])
+        l_2 = np.array([drawing[2]])
+        l = np.concatenate((l_0.T, l_1.T, l_2.T), axis=1)
+        df_new = pd.DataFrame(l, columns=['X(m)', 'Y(m)', 'Seconds'])
+        df_new['Z(m)'] = 0.0
+        df_new['Z(m)'].iloc[-1] = 0.006
+        df = df.append(df_new[['Seconds', 'X(m)', 'Y(m)', 'Z(m)']])
+
+    scaler_x = MinMaxScaler(feature_range=(-0.4, 0.4))
+    scaler_x.fit(df['X(m)'].values.reshape(-1, 1))
+    df_scaled_x = scaler_x.transform(df['X(m)'].values.reshape(-1, 1))
+    scaler_y = MinMaxScaler(feature_range=(-0.2, 0.2))
+    scaler_y.fit(df['Y(m)'].values.reshape(-1, 1))
+    df_scaled_y = scaler_y.transform(df['Y(m)'].values.reshape(-1, 1))
+
+    df_scaled = df.copy(deep=True)
+
+    df_scaled['X(m)'] = df_scaled_x
+    df_scaled['Y(m)'] = df_scaled_y
+
+    df_scaled['Seconds'] /= 1000
+    df_scaled = df_scaled.set_index('Seconds')
+    df_scaled.to_csv(raw_motion)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='sliver-maestro')
     parser.add_argument('-rp', '--rootpath')
+    parser.add_argument('-category', '--category')
+    parser.add_argument('-idx', '--idx')
     args = parser.parse_args()
     root_path = args.rootpath
+    category = args.category
+    idx = args.idx
     if not root_path:
         root_path = os.getcwd()
+    if not category:
+        category = 'cat'
+    if not idx:
+        idx = 0
 
     initial_prefix = os.path.join(root_path, config['adjust_output_images']['initial_prefix'])
     transparent_prefix = os.path.join(root_path, config['adjust_output_images']['transparent_prefix'])
@@ -125,5 +174,9 @@ if __name__ == '__main__':
 
     scaled_base_path = os.path.join(root_path, config['generate_motion']['scaled_base_path'])
     final_motion = os.path.join(root_path, config['generate_motion']['final_motion'])
+    raw_motion = os.path.join(root_path, config['generate_motion']['raw_motion'])
+    raw_data = os.path.join(root_path, config['generate_motion']['raw_data'], category, category + '.ndjson')
     generate_motion(svg_to_csv_base_path=svg_to_csv_base_path, scaled_base_path=scaled_base_path,
                     final_motion=final_motion)
+    extract_raw_motion(raw_data=raw_data, raw_motion=raw_motion, idx=idx)
+

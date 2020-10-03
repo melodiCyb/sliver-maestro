@@ -1,8 +1,8 @@
 import sys, os
 from configparser import ConfigParser
+import argparse
 base_path = os.getcwd().split('src')[0]
 sys.path.insert(1, base_path)
-from src.utils import vrep
 from src.utils.im_utils import *
 
 config = ConfigParser()
@@ -82,7 +82,14 @@ def draw(clientID, coordinates, final_xy, object_name, final_pos=False, use_z=Tr
 if __name__ == '__main__':
     # close all open connections
     vrep.simxFinish(-1)
-    coordinates = get_coordinates(path=config['generate_motion']['final_motion'])
+    parser = argparse.ArgumentParser(prog='sliver-maestro')
+    parser.add_argument('-raw', '--raw')
+    args = parser.parse_args()
+    raw = args.raw
+    if not raw:
+        coordinates = get_coordinates(path=config['generate_motion']['final_motion'])
+    else:
+        coordinates = get_coordinates(path=config['generate_motion']['raw_motion'])
     final_xy = []
     vision_sensor = False
     object_name = 'feltPen_invisible'
