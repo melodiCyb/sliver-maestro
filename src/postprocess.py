@@ -148,13 +148,11 @@ def extract_raw_motion(raw_data, raw_motion, idx):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='sliver-maestro')
     parser.add_argument('-rp', '--rootpath')
-    parser.add_argument('-raw', '--raw')
     parser.add_argument('-category', '--category')
     parser.add_argument('-idx', '--idx')
     args = parser.parse_args()
     root_path = args.rootpath
     category = args.category
-    raw = args.raw
     idx = args.idx
     if not root_path:
         root_path = os.getcwd()
@@ -179,9 +177,7 @@ if __name__ == '__main__':
     final_motion = os.path.join(root_path, config['generate_motion']['final_motion'])
     raw_motion = os.path.join(root_path, config['generate_motion']['raw_motion'])
     raw_data = os.path.join(root_path, config['generate_motion']['raw_data'], category, category + '.ndjson')
-    if not raw:
-        generate_motion(svg_to_csv_base_path=svg_to_csv_base_path, scaled_base_path=scaled_base_path,
-                        final_motion=final_motion)
-    else:
-        extract_raw_motion(raw_data=raw_data, raw_motion=raw_motion, idx=idx)
+    generate_motion(svg_to_csv_base_path=svg_to_csv_base_path, scaled_base_path=scaled_base_path,
+                    final_motion=final_motion)
+    extract_raw_motion(raw_data=raw_data, raw_motion=raw_motion, idx=idx)
 
