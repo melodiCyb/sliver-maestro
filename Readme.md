@@ -18,7 +18,7 @@ We used [DeepMind’s Deep Recurrent Attentive Writer model](https://deepmind.co
 In the post-processing, we first convert outputs into binary images and  then into svg files. We use an svg parser to convert into coordinates and bankster draws the generated images with successive refinements provided by the model.
 
 
-Recommended svg converter: [Link](https://image.online-convert.com/convert-to-svg)
+
 
 
 * After diffs of Draw outputs
@@ -92,8 +92,15 @@ You can see the created output images in the directory ~/sliver-maestro/src/data
        cd src
        
 9. Generate drawing coordinates for the simulated robot
-
-       python3 postprocess.py
+   * Using matplotlib svg converter
+       
+            python3 postprocess.py
+        
+   * Using an online alternative: (Recommended [svg converter](https://image.online-convert.com/convert-to-svg))
+   
+            python3 postprocess.py --svg False
+       
+        
        
 10. Run robot simulation for the generated drawing sequence
 
