@@ -15,12 +15,14 @@ config = ConfigParser()
 config.read('config.cfg')
 
 
-def adjust_output_images(initial_prefix, transparent_prefix, svg=True):
+def adjust_output_images(initial_prefix, transparent_prefix, svg_base_path, svg=True):
     """
     Generates black drawing pixels with a transparent background.
     
     initial_prefix: str. path of raw outputs
     transparent_prefix: str. path of generated images
+    svg_base_path: str. path to save images in svg format
+    svg: bool. if True converts png to svg.
     """
     for t in range(5, 20):
         imgname = '%s_%d.png' % (initial_prefix, t)
@@ -52,9 +54,8 @@ def adjust_output_images(initial_prefix, transparent_prefix, svg=True):
 
     if svg:
         for t in range(5, 20):
-            # alternative online-converter
             imgname = '%s_%d.png' % (transparent_prefix, t)
-            new_name = '%s_%d.svg' % (transparent_prefix, t)
+            new_name = '%s_%d.svg' % (svg_base_path, t)
             s_img = cv2.imread(imgname)
             # img = cv2.bitwise_not(s_img)
             plt.imshow(s_img)
@@ -65,7 +66,7 @@ def generate_motion(svg_to_csv_base_path, scaled_base_path, final_motion):
     # Prepare for V-rep
     def scale_coordinates(svg_to_csv_base_path, scaled_base_path):
         """
-        Scales X and Y coordinates for robot scene.
+        Scales and fits X and Y coordinates into the robot scene.
         """
         for i in range(17, 20):
             path = '%s_%d.csv' % (svg_to_csv_base_path, i)
@@ -89,8 +90,10 @@ def generate_motion(svg_to_csv_base_path, scaled_base_path, final_motion):
 
     def join_dframes(scaled_base_path, final_motion):
         """
-        Joins frames that consist to ordered pixels in top and bottom part of the image
-        base_merge_path: str. path for merged dataframes
+        Combines dataframes that contains drawing sequence in each canvases
+
+        scaled_base_path: str.
+        final_motion: str.
         """
 
         full_frame = pd.DataFrame(columns=['X(m)', 'Y(m)', 'Z(m)'])
@@ -169,10 +172,12 @@ if __name__ == '__main__':
 
     initial_prefix = os.path.join(root_path, config['adjust_output_images']['initial_prefix'])
     transparent_prefix = os.path.join(root_path, config['adjust_output_images']['transparent_prefix'])
-    adjust_output_images(initial_prefix=initial_prefix, transparent_prefix=transparent_prefix, svg=svg)
 
     svg_base_path = os.path.join(root_path, config['SVG']['svg_base_path'])
     svg_to_csv_base_path = os.path.join(root_path, config['SVG']['svg_to_csv_base_path'])
+
+    adjust_output_images(initial_prefix=initial_prefix, transparent_prefix=transparent_prefix,
+                         svg_base_path=svg_base_path, svg=svg)
 
     for i in range(17, 20):
         svg_file = '%s_%d.svg' % (svg_base_path, i)
