@@ -11,27 +11,36 @@ Sliver Maestro is a simulated artistic robot and its expertise is doodling! Sliv
 
 ### How we built it
 
-We used [DeepMind’s Deep Recurrent Attentive Writer model](https://deepmind.com/research/publications/draw-recurrent-neural-network-image-generation) and [Quick, Draw!](https://github.com/googlecreativelab/quickdraw-dataset) dataset to generate sequential images and extract stroke movements. The Quick, Draw! dataset is a collection of 50 million drawings across 345 categories, contributed by players of the game Quick, Draw!. Files are simplified 28x28 grayscale bitmaps in numpy format. As shown in the animation below, the advantage of DRAW to  other image generation approaches is that the model generates the entire scene by reconstructing images step by step where parts of a scene are created independently from others, and approximate sketches are successively refined. 
+We used [DeepMind’s Deep Recurrent Attentive Writer model](https://deepmind.com/research/publications/draw-recurrent-neural-network-image-generation) and [Quick, Draw!](https://github.com/googlecreativelab/quickdraw-dataset) dataset to generate sequential images and extract stroke movements. 
+Draw network is a recurrent auto encoder that uses attention mechanisms. Attention mechanism focus on a small part of the input data in each time step, and iteratively generates image that is closer to the original image. The network is trained with stochastic gradient descent and the
+objective function is variational upper bound on the log likelihood of the data.
+
+The Quick, Draw! dataset is a collection of 50 million drawings across 345 categories, contributed by players of the game Quick, Draw!. Files are simplified 28x28 grayscale bitmaps in numpy format. 
+
+
+As shown in the animation below, the advantage of DRAW to  other image generation approaches is that the model generates the entire scene by reconstructing images step by step where parts of a scene are created independently from others, and approximate sketches are successively refined.
+ 
 
 ![test](https://github.com/melodiCyb/neural-networks/blob/master/catdraw.gif)
 
-In the post-processing, we first convert outputs into binary images and  then into svg files. We use an svg parser to convert into coordinates and bankster draws the generated images with successive refinements provided by the model.
-
-
-
-
-
-* After diffs of Draw outputs
+An illustration of DRAW's refinements which is obtained by subtracting consecutive images 
 
 ![drawpostprocess](https://github.com/melodiCyb/sliver-maestro/blob/master/gifs/postprocessed_draw.gif)
 
+
+We simulated drawings by using both PyGame and a robot simulation environment, CoppeliaSim simulator with Baxter robot
+ model and Remote API for Python.
+
+In the post-processing, we first convert outputs into binary images and  then into svg files. We use an svg parser to convert into coordinates
+ and Sliver Maestro draws the generated images with successive refinements provided by the model.
+
 ## Simulation 
-* Final simulation
+ **Final simulation**
 
 ![bankstergif](https://github.com/melodiCyb/sliver-maestro/blob/master/gifs/generated.gif)
 
 
-* Raw data sample simulation
+**Raw data sample simulation**
 
 ![drawgif](https://github.com/melodiCyb/baxter-drawing/blob/master/baxter_ws/baxter_drawing_cat.gif)
 
