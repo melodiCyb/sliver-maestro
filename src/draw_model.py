@@ -74,6 +74,7 @@ class DRAW(nn.Module):
         self.optimizer = optim.Adam(self.parameters(), lr=self.learning_rate, betas=(self.beta1, 0.999))
 
     def normalSample(self):
+        torch.manual_seed(0)
         return Variable(torch.randn(self.batch_size, self.z_size))
 
     def compute_mu(self, g, rng, delta):
@@ -234,9 +235,12 @@ class DRAW(nn.Module):
             h_dec, dec_state = self.decoder(z, (h_dec_prev, dec_state))
             self.cs[t] = c_prev + self.write(h_dec)
             h_dec_prev = h_dec
+            
         imgs = []
+        
         for img in self.cs:
             imgs.append(self.sigmoid(img).cpu().data.numpy())
+
         return imgs
 
     @staticmethod
