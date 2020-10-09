@@ -3,6 +3,21 @@ from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
+import subprocess
+from google.cloud import storage
+from configparser import ConfigParser
+import sys
+
+base_path = os.getcwd().split('sliver-maestro')[0]
+base_path = os.path.join(base_path, "sliver-maestro")
+sys.path.insert(1, base_path)
+
+config = ConfigParser()
+cfg_file = os.path.join(base_path, "src/config.cfg")
+config.read(cfg_file)
+
+credentials = config['GOOGLE_APPLICATION_CREDENTIALS']['credentials']
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"]=credentials
 
 # ------------
 # dataset.py
@@ -45,12 +60,10 @@ class Dataset:
             self._index_in_epoch = batch_size - rest_num_examples
             end = self._index_in_epoch
             data_new_part = self._data[start:end]
-            #print('start, end:{}, {}'.format(start, end))
             return np.concatenate((data_rest_part, data_new_part), axis=0)
         else:
             self._index_in_epoch += batch_size
             end = self._index_in_epoch
-            #print('start, end:{}, {}'.format(start, end))
             return self._data[start:end]
 
 
@@ -93,7 +106,7 @@ def align(x, y, start_dim=0):
 # create_folders.py
 # ------------------
 
-def create_folders(root_path, categories, category):
+def create_folders(root_path, category):
 
     data_path = os.path.join(root_path, "src", "data")
     save_path = os.path.join(root_path, "src", "save")
@@ -102,12 +115,12 @@ def create_folders(root_path, categories, category):
     images_path = os.path.join(output_path, "images")
     positions_path = os.path.join(output_path, "positions")
     raw_path = os.path.join(data_path, "raw")
-    category_save_path = os.path.join(save_path, categories[category])
-    category_input_path = os.path.join(data_path, "input", categories[category])
-    category_raw_path = os.path.join(data_path, "raw", categories[category])
-    category_images_path = os.path.join(images_path, categories[category])
-    base_input = os.path.join(category_input_path, categories[category])
-    base_raw = os.path.join(category_raw_path, categories[category])
+    category_save_path = os.path.join(save_path, category)
+    category_input_path = os.path.join(data_path, "input", category)
+    category_raw_path = os.path.join(data_path, "raw", category)
+    category_images_path = os.path.join(images_path, category)
+    base_input = os.path.join(category_input_path, category)
+    base_raw = os.path.join(category_raw_path, category)
     
     paths_dict = {'data_path':data_path,
                   'save_path':save_path,
@@ -124,99 +137,112 @@ def create_folders(root_path, categories, category):
                   'base_raw':base_raw
                  }
     
-    src_list = []
-    dst_list = []
-
-    src_file = "gs://quickdraw_dataset/full/numpy_bitmap/" + categories[category] + ".npy"
-    src_list.append(src_file)
-
-    src_file = "gs://quickdraw_dataset/full/raw/" + categories[category] + ".ndjson"
-    src_list.append(src_file)
-
-    dst_file_input = os.path.join(category_input_path, categories[category])
-    dst_file_raw = os.path.join(category_raw_path, categories[category])
-
-    dst_list.append(dst_file_input + ".npy")
-    dst_list.append(dst_file_raw + ".ndjson")
-    
     if not os.path.exists(data_path):
         os.mkdir(data_path)
         if os.path.exists(data_path):
             print("{} folder is created...".format(data_path))
-    else:
-         print("{} folder exists...".format(data_path))
 
     if not os.path.exists(save_path):
         os.mkdir(save_path)
         if os.path.exists(save_path):
             print("{} folder is created...".format(save_path))
-    else:
-         print("{} folder exists...".format(save_path))
             
     if not os.path.exists(input_path):
         os.mkdir(input_path)
         if os.path.exists(input_path):
             print("{} folder is created...".format(input_path))        
-    else:
-         print("{} folder exists...".format(input_path))
             
     if not os.path.exists(output_path):
         os.mkdir(output_path)
         if os.path.exists(output_path):
             print("{} folder is created...".format(output_path))
-    else:
-         print("{} folder exists...".format(output_path))
 
     if not os.path.exists(images_path):
         os.mkdir(images_path)
         if os.path.exists(images_path):
             print("{} folder is created...".format(images_path))
-    else:
-         print("{} folder exists...".format(images_path))
             
     if not os.path.exists(positions_path):
         os.mkdir(positions_path)
         if os.path.exists(positions_path):
             print("{} folder is created...".format(positions_path))
-    else:
-         print("{} folder exists...".format(positions_path))
             
     if not os.path.exists(raw_path):
         os.mkdir(raw_path)
         if os.path.exists(raw_path):
             print("{} folder is created...".format(raw_path))
-    else:
-         print("{} folder exists...".format(raw_path))
 
     if not os.path.exists(category_save_path):
         os.mkdir(category_save_path)
         if os.path.exists(category_save_path):
-            print("{} folder is created...".format(category_save_path))
-    else:
-         print("{} folder exists...".format(category_save_path))         
+            print("{} folder is created...".format(category_save_path))   
             
     if not os.path.exists(category_input_path):
         os.mkdir(category_input_path)
         if os.path.exists(category_input_path):
-            print("{} folder is created...".format(category_input_path))
-    else:
-         print("{} folder exists...".format(category_input_path))            
+            print("{} folder is created...".format(category_input_path))     
     
     if not os.path.exists(category_raw_path):
         os.mkdir(category_raw_path)
         if os.path.exists(category_raw_path):
             print("{} folder is created...".format(category_raw_path))
-    else:
-         print("{} folder exists...".format(category_raw_path))   
 
     if not os.path.exists(category_images_path):
         os.mkdir(category_images_path)
         if os.path.exists(category_images_path):
             print("{} folder is created...".format(category_images_path))
-    else:
-         print("{} folder exists...".format(category_images_path))   
-            
+ 
+    print("folders are created...")
+
+    src_list = []
+    dst_list = []
+
+    src_file = "full/numpy_bitmap/" + category + ".npy"
+    #src_file = "gs://quickdraw_dataset/full/numpy_bitmap/" + categories[category] + ".npy"
+    src_list.append(src_file)
+
+    #src_file = "gs://quickdraw_dataset/full/raw/" + categories[category] + ".ndjson"
+    src_file = "full/raw/" + category + ".ndjson"
+    src_list.append(src_file)
+
+    dst_file_input = os.path.join(category_input_path, category)
+    dst_file_raw = os.path.join(category_raw_path, category)
+
+    dst_list.append(dst_file_input + ".npy")
+    dst_list.append(dst_file_raw + ".ndjson")    
+    
     return src_list, dst_list, paths_dict
+
+
+def download_blob(bucket_name, source_blob_name, destination_file_name):
+    
+    """Downloads a blob from the bucket."""
+    bucket_name = "quickdraw_dataset"
+    source_blob_name = source_blob_name
+    destination_file_name = destination_file_name
+
+    storage_client = storage.Client()
+
+    bucket = storage_client.bucket(bucket_name)
+    blob = bucket.blob(source_blob_name)
+    blob.download_to_filename(destination_file_name)
+
+    print(
+        "Blob {} downloaded to {}.".format(
+            source_blob_name, destination_file_name
+        )
+    )
+
+
+def download_data(src_list, dst_list):
+
+    print('Credendtials from environ: {}'.format(os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')))    
+    
+    for (src_file, dst_file) in zip(src_list, dst_list):
+        bucket_name = "your-bucket-name"
+        source_blob_name = src_file
+        destination_file_name = dst_file        
+        download_blob(bucket_name, source_blob_name, destination_file_name)
 
 # ---------------
 # model_utils.py
