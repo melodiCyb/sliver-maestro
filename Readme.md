@@ -68,7 +68,10 @@ We simulated drawings by using both PyGame and a robot simulation environment, C
       
 ### Download Quick, Draw! dataset
 
-4. TODO: add download data step
+4. Download data
+        
+        gsutil -m cp gs://quickdraw_dataset/full/numpy_bitmap/cat.npy /Users/melodi/sliver-maestro/src/data/input/cat/cat.npy
+        gsutil -m cp gs://quickdraw_dataset/full/raw/cat.ndjson /Users/melodi/sliver-maestro/src/data/raw/cat/cat.ndjson
 
 ### Deep Recurrent Attentive Writer
 
@@ -156,6 +159,7 @@ Directory layout:
         │── environment.yml
         └── Readme.md
         
-        
+## Notebooks
+ You can see walkthrough examples in the notebooks folder for [cat](https://github.com/melodiCyb/sliver-maestro/blob/master/notebooks/draw_cat.ipynb) and [moon](https://github.com/melodiCyb/sliver-maestro/blob/master/notebooks/draw_moon.ipynb) datasets. 
 ## References
 1. PyTorch implementation of Deep Recurrent Attentive Writer model was modified from [this repo](https://github.com/chenzhaomin123/draw_pytorch)

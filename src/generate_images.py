@@ -17,15 +17,31 @@ class Test(DRAW):
         self.category = category
         self.base_path = base_path
 
-    def xrecons_grid(self, img_loc):
+    def xrecons_grid(self, img_loc, img):
         """
         plots canvas for single time step
         X is x_recons, (batch_size x img_size)
         assumes features = BxA images
         batch is assumed to be a square number
         """
+        # TODO: convert img_loc to idx
         self.load_model()
-        X = self.generate()
+        
+        # adjust for the model
+        img = reshape(img, (img.shape[0], 1, self.A, self.B))
+        img = torch.Tensor(img)
+        bs = img.size()[0]
+        img = Variable(img).view(bs, -1)
+        
+        # feed forward and generate canvases self.cs
+        self.forward(img)
+        X = []
+       
+        for im in self.cs:
+            X.append(self.sigmoid(im).cpu().data.numpy())
+
+        #X = self.generate()
+           
         for t in range(self.T):
             padsize = 1
             padval = .5
@@ -88,6 +104,11 @@ if __name__ == '__main__':
 
     torch.set_default_tensor_type('torch.FloatTensor')
     test_model = Test(category)
+    ## TODO: add dataloaders['test'] option together with the start index info
+    dataloader = test_model.dataloaders['train']
+    data = dataloader.next_batch(test_model.batch_size)
+    
+    
     img_loc = {'startr': 0, 'endr': 30, 'startc': 0, 'endc': 30}
     print("generating images...")
-    test_model.xrecons_grid(img_loc)
+    test_model.xrecons_grid(img_loc, data)
