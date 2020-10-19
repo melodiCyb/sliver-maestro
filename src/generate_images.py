@@ -17,14 +17,14 @@ class Test(DRAW):
         self.category = category
         self.base_path = base_path
 
-    def xrecons_grid(self, img_loc, img):
+    def xrecons_grid(self, index, img):
         """
         plots canvas for single time step
         X is x_recons, (batch_size x img_size)
         assumes features = BxA images
         batch is assumed to be a square number
         """
-        # TODO: convert img_loc to idx
+        
         self.load_model()
         
         # adjust for the model
@@ -59,6 +59,7 @@ class Test(DRAW):
                     startc = j * pw + padsize
                     endc = startc + self.A
                     img[startr:endr, startc:endc] = X[t][i, j, :, :]
+            img_loc = self.get_image_location(index) 
             img = img[img_loc['startr']:img_loc['endr'], img_loc['startc']:img_loc['endc']]
             plt.matshow(img, cmap=plt.cm.gray)
             plt.axis('off')
@@ -90,6 +91,16 @@ class Test(DRAW):
         model = self.model.load_state_dict(state_dict)
 
         return model
+    
+    def get_image_location(self, index):
+
+        startr = (index // 8) * 30
+        endr = ((index // 8) * 30) + 30
+
+        startc = (index % 8) * 30
+        endc = ((index % 8) * 30) + 30
+
+        return {'startr':startr, 'endr':endr, 'startc':startc, 'endc':endc}
 
 
 if __name__ == '__main__':
