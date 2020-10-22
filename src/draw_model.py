@@ -37,7 +37,10 @@ class DRAW(nn.Module):
         self.beta1 = float(config['DRAW']['beta1'])
         self.USE_CUDA = eval(config['DRAW']['USE_CUDA'])
         self.clip = float(config['DRAW']['clip'])
-
+        self.padsize = int(config['DRAW']['padsize'])
+        self.padval = float(config['DRAW']['padval'])
+        self.ph = self.B + 2 * self.padsize
+        self.pw = self.A + 2 * self.padsize
 
         self.cs = [0] * self.T
         self.logsigmas, self.sigmas, self.mus = [0] * self.T, [0] * self.T, [0] * self.T
