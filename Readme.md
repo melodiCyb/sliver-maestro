@@ -70,18 +70,18 @@ We simulated drawings by using both PyGame and a robot simulation environment, C
 
 4. Download data
         
-        gsutil -m cp gs://quickdraw_dataset/full/numpy_bitmap/cat.npy /Users/melodi/sliver-maestro/src/data/input/cat/cat.npy
-        gsutil -m cp gs://quickdraw_dataset/full/raw/cat.ndjson /Users/melodi/sliver-maestro/src/data/raw/cat/cat.ndjson
+        gsutil -m cp gs://quickdraw_dataset/full/numpy_bitmap/cat.npy ./data/input/cat/cat.npy
+        gsutil -m cp gs://quickdraw_dataset/full/raw/cat.ndjson ./data/raw/cat/cat.ndjson
 
 ### Deep Recurrent Attentive Writer
 
 5. Train model (Optional) 
 
        python3 train.py --phase train --category cat
-TODO: add index option        
+       
 6. Generate image sequence 
     
-       python3 generate_images.py --category cat
+       python3 generate_images.py --category cat --idx 1 --phase train
 
 You can see the created output images in the directory ~/sliver-maestro/src/data/output/images    
 
@@ -100,16 +100,10 @@ You can see the created output images in the directory ~/sliver-maestro/src/data
        cd src
        
 9. Generate drawing coordinates for the simulated robot
-   * Using matplotlib svg converter
-       
-            python3 postprocess.py --category cat --idx 0
+ 
+       python3 postprocess.py --category cat --idx 1
         
-   * Using an online alternative: (Recommended [svg converter](https://image.online-convert.com/convert-to-svg))
    
-            python3 postprocess.py --category cat --idx 0 --svg False
-       
-        
-       
 10. Run robot simulation for the generated drawing sequence
 
         python3 drawer.py 
