@@ -190,5 +190,5 @@ if __name__ == '__main__':
     raw_data = os.path.join(root_path, config['generate_motion']['raw_data'], category, category + '.ndjson')
     generate_motion(svg_to_csv_base_path=svg_to_csv_base_path, scaled_base_path=scaled_base_path,
                     final_motion=final_motion)
-    extract_raw_motion(raw_data=raw_data, raw_motion=raw_motion, idx=idx)
+    extract_raw_motion(raw_data=raw_data, raw_motion=raw_motion, idx=int(idx))
 
